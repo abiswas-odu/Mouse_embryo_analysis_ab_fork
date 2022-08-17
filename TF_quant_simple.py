@@ -24,8 +24,8 @@ from Label_read import *
 # # x_shift and y_shift can be used for camera alignment. For our 210809 data, for Cdx2, I found x_shift = -11, y_shift = 15.
 
 # Returns:
-# # mem_tf_vals = dictionary of membrane labels indexed by (timepoint, label)
-# # nuc_tf_vals = dictionary of nuclear labels indexed by (timepoint, label)
+# # mem_tf_vals = dictionary of membrane intensities indexed by (timepoint, label)
+# # nuc_tf_vals = dictionary of nuclear intensities indexed by (timepoint, label)
 
 # Will return an empty dictionary if one of the segmentation types is unavailable
 
