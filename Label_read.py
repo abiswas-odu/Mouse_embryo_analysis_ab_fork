@@ -1,54 +1,36 @@
-import numpy as np
-import pandas as pd
-import seaborn as sns
-import glob
-from skimage import io
-import matplotlib.pyplot as plt
+from io_utils import read_image
 import os
-
-from pyklb import readfull
 
 # Reads segmentation results for both membrane and nuclei
 
 # Parameters:
-# # membrane = directory with membrane segmentation results
-# # nuclear = directory with nuclear segmentation results
-
-# Assumes one image file per timepoint in each directory
-
+# # membrane_file  = file with membrane segmentation results
+# # nuclear_file  = file with nuclear segmentation results
+# # nuclear_file_cirrected  = file with hand corrected nuclear segmentation results
 # Returns:
-# # mem_labels = dictionary of membrane labels indexed by timepoint
-# # nuc_labels = dictionary of nuclear labels indexed by timepoint
+# # mem_mask = membrane labels indexed
+# # nuc_mask = nuclear labels indexed
+# Will return None if one or both the segmentation types is unavailable
 
-# Will return an empty dictionary if one of the segmentation types is unavailable
+def read_segments(mem_segm_file, nucl_segm_file, nucl_segm_file_corrected):
+    # Initialize masks to None
+    nucl_mask = None
+    memb_mask = None
 
-def read_segments(membrane, nuclear):
-    nuc_labels= {}               
-    mem_labels = {}
-    #nuclei
+    # nuclei
     try:
-        root = nuclear
-        images = glob.glob(nuclear+'*.klb')  
-        nuc_labels = {}
-        for im in np.sort(images):
-            cur_name = im.split('/')[-1]
-            time = int(cur_name.split('.')[0].split('_')[-1])
-            #print(time)
-            nuc_labels[time] = readfull(str(im))
-    except:
-            print('Problem with reading nuclear segments')
-            pass        
+        if os.path.exists(nucl_segm_file_corrected): # Look for corrected mask first
+            nucl_mask = read_image(nucl_segm_file_corrected)
+        elif os.path.exists(nucl_segm_file):
+            nucl_mask = read_image(nucl_segm_file)
+    except Exception as e:
+            print('Problem with reading nuclear segments', e)
+
     #membrane 
     try:
-        root = membrane
-        images = glob.glob(membrane+'*_cp_masks.tif')  
-        mem_labels = {}
-        for im in np.sort(images):
-            cur_name = im.split('/')[-1]
-            time = int(cur_name.split('_')[0])
-            #print(time)
-            mem_labels[time] = io.imread(im)
-    except:
-        print('Problem with reading membrane segments')
-        pass
-    return mem_labels, nuc_labels
+        if os.path.exists(mem_segm_file):
+            memb_mask = read_image(mem_segm_file)
+    except Exception as e:
+        print('Problem with reading membrane segments', e)
+
+    return memb_mask, nucl_mask
