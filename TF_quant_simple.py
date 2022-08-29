@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import glob
 from skimage.transform import rescale
 from Label_read import *
 import os
@@ -50,7 +49,9 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
                                      os.path.splitext(f)[1] == '.npy')]
 
     nuc_tf_vals = {}
+    nuc_vols = {}
     mem_tf_vals = {}
+    mem_vols = {}
 
     # Set max_time to the len-1 to that we can loop till last
     if max_time == -1:
@@ -83,9 +84,12 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
             #Extract nucl channel data
             if type(nuc_label) is np.ndarray:
                 nuc_tf_vals[time_index] = {}
+                nuc_vols[time_index] = {}
                 nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
                 for lab in np.unique(nuc_label):
-                    nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
+                    if lab != 0:
+                        nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
+                        nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
 
             #Extract membrane channel data
             if type(mem_label) is np.ndarray:
@@ -95,12 +99,15 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
                 sh = a_mem.shape
                 mem_label = mem_label[:sh[0], :sh[1], :sh[2]]
                 mem_tf_vals[time_index] = {}
+                mem_vols[time_index] = {}
                 for lab in np.unique(mem_label):
-                    if np.sum(mem_label == lab) >= cell_volume_cutoff:
-                        mem_tf_vals[time_index][lab] = np.mean(a_mem[mem_label == lab])
+                    if lab != 0:
+                        if np.sum(mem_label == lab) >= cell_volume_cutoff:
+                            mem_tf_vals[time_index][lab] = np.mean(a_mem[mem_label == lab])
+                            mem_vols[time_index][lab] = np.count_nonzero(mem_label == lab)
         except Exception as e:
             print('Skipping image: ' + str(im))
             print('Exception:')
             print(e)
-    return mem_tf_vals, nuc_tf_vals
+    return mem_tf_vals, nuc_tf_vals, mem_vols, nuc_vols
 
