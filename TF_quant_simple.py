@@ -34,10 +34,10 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
     hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col=[0])
     vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
     hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
-    crop_y_min = max(hpairs[0]+y_shift-offset,0)
-    crop_y_max = min(hpairs[1]+y_shift+offset, max_margin)
-    crop_x_min = max(vpairs[0]+x_shift-offset,0)
-    crop_x_max = min(vpairs[1]+x_shift+offset, max_margin)
+    crop_y_min = max(hpairs[0]-offset,0)
+    crop_y_max = min(hpairs[1]+offset, max_margin)
+    crop_x_min = max(vpairs[0]-offset,0)
+    crop_x_max = min(vpairs[1]+offset, max_margin)
     print('Cropboxes found...')
 
     # read TF filenames recursively
@@ -64,7 +64,7 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
             image_file_str = str(im)
             print('Processing: '+ image_file_str)
             a = read_image(image_file_str)
-            a = a[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
+            a = a[:, (crop_x_min+x_shift):(crop_x_max+x_shift), (crop_y_min+y_shift):(crop_y_max+y_shift)]
             dir_name = os.path.dirname(image_file_str)
 
             cur_name = os.path.basename(image_file_str)
