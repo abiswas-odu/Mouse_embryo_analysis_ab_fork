@@ -3,7 +3,7 @@ from TF_quant_simple import *
 from time import time
 from Align_cameras import *
 
-__version__ = "1.1"
+__version__ = "1.2"
 
 @click.group()
 def cli():

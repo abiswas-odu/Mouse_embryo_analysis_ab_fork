@@ -73,13 +73,9 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
             file_base = os.path.basename(cur_name).split(os.extsep)
             time_index = int(file_base[0].split('_')[-1])
 
-            # Get the label file names
-            mem_segm_file = os.path.join(mem_segm_dir, file_prefix + "_cp_masks" + file_ext)
-            nucl_segm_file = os.path.join(nucl_segm_dir,file_prefix + ".label" + file_ext)
-            nucl_segm_file_corrected = os.path.join(nucl_segm_dir,file_prefix + "_SegmentationCorrected" + file_ext)
-
+            # Get the nuclei label file names with same camera
             # read segmentation results
-            mem_label, nuc_label = read_segments(mem_segm_file, nucl_segm_file, nucl_segm_file_corrected)
+            nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext,"nuclei")
 
             #Extract nucl channel data
             if type(nuc_label) is np.ndarray:
@@ -92,6 +88,7 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
                         nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
 
             #Extract membrane channel data
+            mem_label = read_segments(mem_segm_dir, file_prefix, file_ext,"membrane")
             if type(mem_label) is np.ndarray:
                 a_mem = rescale(a, (1/(2*0.208),1/4,1/4), preserve_range = True, anti_aliasing = True)
                 sh = mem_label.shape

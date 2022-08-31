@@ -12,25 +12,42 @@ import os
 # # nuc_mask = nuclear labels indexed
 # Will return None if one or both the segmentation types is unavailable
 
-def read_segments(mem_segm_file, nucl_segm_file, nucl_segm_file_corrected):
+def read_segments(data_dir, file_prefix, file_ext, segmentation_type):
     # Initialize masks to None
-    nucl_mask = None
-    memb_mask = None
-
+    label_mask = None
     # nuclei
     try:
-        if os.path.exists(nucl_segm_file_corrected): # Look for corrected mask first
-            nucl_mask = read_image(nucl_segm_file_corrected)
-        elif os.path.exists(nucl_segm_file):
-            nucl_mask = read_image(nucl_segm_file)
+        if segmentation_type == "membrane":
+            mem_file = os.path.join(data_dir, file_prefix + "_cp_masks" + file_ext)
+            if os.path.exists(mem_file):
+                label_mask = read_image(mem_file)
+            else: # Check the other cam
+                if 'Long' in file_prefix:
+                    replace_cam_prefix = file_prefix.replace('Long','Short')
+                else:
+                    replace_cam_prefix = file_prefix.replace('Short','Long')
+                mem_file = os.path.join(data_dir, replace_cam_prefix + "_cp_masks" + file_ext)
+                if os.path.exists(mem_file):
+                    label_mask = read_image(mem_file)
+        else:
+            nucl_segm_file = os.path.join(data_dir,file_prefix + ".label" + file_ext)
+            nucl_segm_file_corrected = os.path.join(data_dir,file_prefix + "_SegmentationCorrected" + file_ext)
+            if os.path.exists(nucl_segm_file_corrected): # Look for corrected mask first
+                label_mask = read_image(nucl_segm_file_corrected)
+            elif os.path.exists(nucl_segm_file):
+                label_mask = read_image(nucl_segm_file)
+            else: # Check the other Cam
+                if 'Long' in file_prefix:
+                    replace_cam_prefix = file_prefix.replace('Long','Short')
+                else:
+                    replace_cam_prefix = file_prefix.replace('Short','Long')
+                nucl_segm_file = os.path.join(data_dir,replace_cam_prefix + ".label" + file_ext)
+                nucl_segm_file_corrected = os.path.join(data_dir,replace_cam_prefix + "_SegmentationCorrected" + file_ext)
+                if os.path.exists(nucl_segm_file_corrected): # Look for corrected mask first
+                    label_mask = read_image(nucl_segm_file_corrected)
+                elif os.path.exists(nucl_segm_file):
+                    label_mask = read_image(nucl_segm_file)
     except Exception as e:
-            print('Problem with reading nuclear segments', e)
+            print('Problem with reading segments', e)
 
-    #membrane 
-    try:
-        if os.path.exists(mem_segm_file):
-            memb_mask = read_image(mem_segm_file)
-    except Exception as e:
-        print('Problem with reading membrane segments', e)
-
-    return memb_mask, nucl_mask
+    return label_mask
