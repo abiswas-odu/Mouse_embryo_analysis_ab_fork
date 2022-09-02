@@ -28,8 +28,13 @@ def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index, offset =
     crop_x_min = max(vpairs[0]-offset,0)
     crop_x_max = min(vpairs[1]+offset, max_margin)
     print('Cropboxes found...')
-    
-    _, nuc_label = read_segments('', nucl_segm_image,'')
+
+    seg_dir = os.path.dirname(nucl_segm_image)
+    cur_name = os.path.basename(nucl_segm_image)
+    file_prefix = os.path.splitext(cur_name)[0]
+    file_ext = os.path.splitext(cur_name)[1]
+    nuc_label = read_segments(seg_dir, file_prefix, file_ext, 'nuclei')
+
     nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
 
     if type(nuc_label) is np.ndarray:
