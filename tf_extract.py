@@ -47,19 +47,21 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
                                            timestamp_max, offset, max_margin, x_shift, y_shift)
 
-    with open(os.path.join(crop_dir,'membrane_tf.csv'), 'w') as f_out:
-        f_out.write("Timestamp, Label ID, Mean Label Intensity, Label Volume\n")
-        for time_index, labels in mem_tf_vals.items():
-            for label_id, intensity in labels.items():
-                f_out.write(str(time_index) + ',' + str(label_id) + ',' + str(intensity)
-                            + ',' + str(mem_vols[time_index][label_id]) + '\n')
+    if len(mem_tf_vals)>0:
+        with open(os.path.join(crop_dir,'membrane_tf.csv'), 'w') as f_out:
+            f_out.write("Timestamp, Label ID, Mean Label Intensity, Label Volume\n")
+            for time_index, labels in mem_tf_vals.items():
+                for label_id, intensity in labels.items():
+                    f_out.write(str(time_index) + ',' + str(label_id) + ',' + str(intensity)
+                                + ',' + str(mem_vols[time_index][label_id]) + '\n')
 
-    with open(os.path.join(crop_dir,'nuclei_tf.csv'), 'w') as f_out:
-        f_out.write("Timestamp, Label ID, Mean Label Intensity, Label Volume\n")
-        for time_index, labels in nuc_tf_vals.items():
-            for label_id, intensity in labels.items():
-                f_out.write(str(time_index) + ',' + str(label_id) + ',' + str(intensity)
-                            + ',' + str(nuc_vols[time_index][label_id]) + '\n')
+    if len(nuc_tf_vals)>0:
+        with open(os.path.join(crop_dir,'nuclei_tf.csv'), 'w') as f_out:
+            f_out.write("Timestamp, Label ID, Mean Label Intensity, Label Volume\n")
+            for time_index, labels in nuc_tf_vals.items():
+                for label_id, intensity in labels.items():
+                    f_out.write(str(time_index) + ',' + str(label_id) + ',' + str(intensity)
+                                + ',' + str(nuc_vols[time_index][label_id]) + '\n')
 
     t1 = time() - t0
     click.echo('Transcription factor intensity files generated here:' + crop_dir)
