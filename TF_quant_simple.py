@@ -75,7 +75,7 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
 
             # Get the nuclei label file names with same camera
             # read segmentation results
-            nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext,"nuclei")
+            nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext, "nuclei")
 
             #Extract nucl channel data
             if type(nuc_label) is np.ndarray:
@@ -88,7 +88,7 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
                         nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
 
             #Extract membrane channel data
-            mem_label = read_segments(mem_segm_dir, file_prefix, file_ext,"membrane")
+            mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane")
             if type(mem_label) is np.ndarray:
                 a_mem = rescale(a, (1/(2*0.208),1/4,1/4), preserve_range = True, anti_aliasing = True)
                 sh = mem_label.shape

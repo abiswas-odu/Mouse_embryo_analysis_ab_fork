@@ -18,7 +18,8 @@ def read_segments(data_dir, file_prefix, file_ext, segmentation_type):
     # nuclei
     try:
         if segmentation_type == "membrane":
-            mem_file = os.path.join(data_dir, file_prefix + "_cp_masks" + file_ext)
+            file_prefix = file_prefix.split(os.extsep)[0]
+            mem_file = os.path.join(data_dir, file_prefix + ".crop_cp_masks" + file_ext)
             if os.path.exists(mem_file):
                 label_mask = read_image(mem_file)
             else: # Check the other cam
@@ -26,7 +27,7 @@ def read_segments(data_dir, file_prefix, file_ext, segmentation_type):
                     replace_cam_prefix = file_prefix.replace('Long','Short')
                 else:
                     replace_cam_prefix = file_prefix.replace('Short','Long')
-                mem_file = os.path.join(data_dir, replace_cam_prefix + "_cp_masks" + file_ext)
+                mem_file = os.path.join(data_dir, replace_cam_prefix + ".crop_cp_masks" + file_ext)
                 if os.path.exists(mem_file):
                     label_mask = read_image(mem_file)
         else:
