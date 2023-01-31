@@ -3,8 +3,9 @@ from TF_quant_simple import *
 from time import time
 from Align_cameras import *
 from Label_read import *
+from ErodeLabels import *
 
-__version__ = "1.3"
+__version__ = "1.4"
 
 @click.group()
 def cli():
@@ -116,6 +117,62 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
 
     t1 = time() - t0
     click.echo('Transcription factor intensity files generated here:' + crop_dir)
+    click.echo("Time elapsed: " + str(t1))
+
+@cli.command()
+@click.option('--orig_image_file',required=True,
+              type=click.Path(exists=True,file_okay=True,dir_okay=False,readable=True),
+              help="Original klb/tif/h5/npy file.")
+@click.option('--nucl_seg_file',required=False, default='',
+              type=click.Path(exists=True,file_okay=True,dir_okay=False,readable=True),
+              help="Directory with nuclei segmentation in same format as original images, klb/tif/h5/npy file.")
+@click.option('--crop_dir',required=True,
+              type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
+              help="The directory with hpair.csv and vpair.csv generated with generate-cropboxes. "
+                   "This is also the OUTPUT directory.")
+@click.option("--cropbox_index","-cbi", required=False, default=0, type=click.INT,
+              help="The cropbox to visualize for cropping.")
+@click.option("--offset","-of", required=False, default=150, type=click.INT,
+              help="The offset used during cropping.")
+@click.option("--max_margin", required=False, default=2048, type=click.INT,
+              help="Original size of images.")
+def align_cam(orig_image_file, nucl_seg_file, crop_dir, cropbox_index, offset, max_margin):
+    click.echo('Attempting to align cameras...')
+    t0 = time()
+    x_shift, y_shift = align_cameras(orig_image_file, nucl_seg_file, crop_dir,
+                                     cropbox_index, offset, max_margin)
+    print('X-shift:' + str(x_shift))
+    print('Y-shift:' + str(y_shift))
+
+    t1 = time() - t0
+    click.echo("Time elapsed: " + str(t1))
+
+@cli.command()
+@click.option('--orig_image_dir',required=True,
+              type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
+              help="Original klb/tif/h5/npy files.")
+@click.option('--nucl_seg_dir',required=True, default='',
+              type=click.Path(file_okay=False,dir_okay=True,readable=True),
+              help="Directory with nuclei segmentation in same format as original images, klb/tif/h5/npy files.")
+@click.option('--out_dir',required=False, default='.',
+              type=click.Path(file_okay=False,dir_okay=True,readable=True),
+              help="Directory where the eroded labels and contours will bne saved.")
+@click.option("--footprint_size","-fp", required=False, default=3, type=click.INT,
+              help="The footprint used during erosion.")
+@click.option("--gen_contour", "-gc", is_flag=True,
+              help="Generate RGB contour image with the eroded label drawn into the image.")
+def erode_labels(orig_image_dir, nucl_seg_dir, out_dir, footprint_size, gen_contour):
+    click.echo('Attempting to erode labels...')
+    t0 = time()
+    images = [os.path.join(dp, f)
+              for dp, dn, filenames in os.walk(orig_image_dir)
+              for f in filenames if (os.path.splitext(f)[1] == '.klb' or
+                                     os.path.splitext(f)[1] == '.h5' or
+                                     os.path.splitext(f)[1] == '.tif' or
+                                     os.path.splitext(f)[1] == '.npy')]
+    for image in images:
+        erode_image_labels(image, nucl_seg_dir, out_dir, footprint_size, gen_contour)
+    t1 = time() - t0
     click.echo("Time elapsed: " + str(t1))
 
 if __name__ == '__main__':

@@ -81,7 +81,7 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
             if type(nuc_label) is np.ndarray:
                 nuc_tf_vals[time_index] = {}
                 nuc_vols[time_index] = {}
-                nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
+                nuc_label = nuc_label[:, 0:2048, 0:2048]
                 for lab in np.unique(nuc_label):
                     if lab != 0:
                         nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
