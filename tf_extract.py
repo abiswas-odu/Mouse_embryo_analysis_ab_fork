@@ -73,7 +73,7 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
         file_prefix = os.path.splitext(cur_name)[0]
         file_ext = os.path.splitext(cur_name)[1]
         nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
-        x_shift_1, y_shift_1 = align_cameras(images[image_mid_idx], nucl_seg_file, crop_dir,
+        x_shift_1, y_shift_1 = align_cameras(str(images[image_mid_idx]), nucl_seg_file, crop_dir,
                                              cropbox_index, offset, max_margin)
 
         image_1_idx = 0
@@ -81,7 +81,7 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
         file_prefix = os.path.splitext(cur_name)[0]
         file_ext = os.path.splitext(cur_name)[1]
         nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
-        x_shift_1, y_shift_1 = align_cameras(images[image_1_idx], nucl_seg_file, crop_dir,
+        x_shift_1, y_shift_1 = align_cameras(str(images[image_1_idx]), nucl_seg_file, crop_dir,
                                              cropbox_index, offset, max_margin)
 
         print('X-shift:' + str(x_shift))
