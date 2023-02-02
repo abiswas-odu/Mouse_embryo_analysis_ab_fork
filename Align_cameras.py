@@ -39,8 +39,11 @@ def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index, offset =
         for x_shift in range(-50, 50):
             mean_signal[x_shift] = {}
             for y_shift in range(-50,50):
-                tf_signal = tf[:,(crop_x_min+x_shift):(crop_x_max+x_shift),
-                         (crop_y_min+y_shift):(crop_y_max+y_shift)]
+                x_min = (crop_x_min+x_shift) if 0 < (crop_x_min+x_shift) <= max_margin else (0 if 0 < (crop_x_min+x_shift) else max_margin)
+                x_max = (crop_x_max+x_shift) if 0 < (crop_x_max+x_shift) <= max_margin else (0 if 0 < (crop_x_max+x_shift) else max_margin)
+                y_min = (crop_y_min+y_shift) if 0 < (crop_y_min+y_shift) <= max_margin else (0 if 0 < (crop_y_min+y_shift) else max_margin)
+                y_max = (crop_y_max+y_shift) if 0 < (crop_y_max+y_shift) <= max_margin else (0 if 0 < (crop_y_max+y_shift) else max_margin)
+                tf_signal = tf[:, x_min:x_max, y_min:y_max]
                 mean_signal[x_shift][y_shift] = tf_signal[nuc_label.astype(bool)].mean()
         ind = pd.DataFrame(mean_signal).stack().argmax()
         shs = pd.DataFrame(mean_signal).stack().index[ind]
