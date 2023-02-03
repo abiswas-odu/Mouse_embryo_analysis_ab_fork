@@ -93,8 +93,8 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
         print('Image ' + str(image_n_idx) + ' X-shift:' + str(x_shift_3))
         print('Image ' + str(image_n_idx) + ' Y-shift:' + str(y_shift_3))
 
-        x_shift = round((x_shift_1 + x_shift_2 + x_shift_3) / 3, 0)
-        y_shift = round((y_shift_1 + y_shift_2 + y_shift_3) / 3, 0)
+        x_shift = int(round((x_shift_1 + x_shift_2 + x_shift_3) / 3, 0))
+        y_shift = int(round((y_shift_1 + y_shift_2 + y_shift_3) / 3, 0))
         print('X-shift:' + str(x_shift))
         print('Y-shift:' + str(y_shift))
 
