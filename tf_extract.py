@@ -79,8 +79,8 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
         x_shift_2, y_shift_2 = align_cameras(str(images[image_mid_idx]), nucl_seg_file, crop_dir,
                                              cropbox_index, offset, max_margin)
 
-        print('Image ' + str(image_mid_idx) + 'X-shift:' + str(x_shift_2))
-        print('Image ' + str(image_mid_idx) + 'Y-shift:' + str(y_shift_2))
+        print('Image ' + str(image_mid_idx) + ' X-shift:' + str(x_shift_2))
+        print('Image ' + str(image_mid_idx) + ' Y-shift:' + str(y_shift_2))
 
         image_n_idx = len(images) - 1
         cur_name = os.path.basename(images[image_n_idx])
@@ -90,11 +90,11 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
         x_shift_3, y_shift_3 = align_cameras(str(images[image_n_idx]), nucl_seg_file, crop_dir,
                                              cropbox_index, offset, max_margin)
 
-        print('Image ' + str(image_n_idx) + 'X-shift:' + str(x_shift_3))
-        print('Image ' + str(image_n_idx) + 'Y-shift:' + str(y_shift_3))
+        print('Image ' + str(image_n_idx) + ' X-shift:' + str(x_shift_3))
+        print('Image ' + str(image_n_idx) + ' Y-shift:' + str(y_shift_3))
 
-        x_shift = (x_shift_1 + x_shift_2 + x_shift_3) / 3
-        y_shift = (y_shift_1 + y_shift_2 + y_shift_3) / 3
+        x_shift = round((x_shift_1 + x_shift_2 + x_shift_3) / 3, 0)
+        y_shift = round((y_shift_1 + y_shift_2 + y_shift_3) / 3, 0)
         print('X-shift:' + str(x_shift))
         print('Y-shift:' + str(y_shift))
 

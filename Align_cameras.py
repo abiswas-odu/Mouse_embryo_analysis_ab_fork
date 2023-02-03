@@ -40,10 +40,10 @@ def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index, offset =
             mean_signal[x_shift] = {}
             for y_shift in range(-50,50):
                 try:
-                    x_min = (crop_x_min+x_shift) if 0 < (crop_x_min+x_shift) <= max_margin else (0 if 0 < (crop_x_min+x_shift) else max_margin)
-                    x_max = (crop_x_max+x_shift) if 0 < (crop_x_max+x_shift) <= max_margin else (0 if 0 < (crop_x_max+x_shift) else max_margin)
-                    y_min = (crop_y_min+y_shift) if 0 < (crop_y_min+y_shift) <= max_margin else (0 if 0 < (crop_y_min+y_shift) else max_margin)
-                    y_max = (crop_y_max+y_shift) if 0 < (crop_y_max+y_shift) <= max_margin else (0 if 0 < (crop_y_max+y_shift) else max_margin)
+                    x_min = (crop_x_min+x_shift) if 0 <= (crop_x_min+x_shift) < max_margin else 0 if 0 > (crop_x_min+x_shift) else max_margin
+                    x_max = (crop_x_max+x_shift) if 0 <= (crop_x_max+x_shift) < max_margin else 0 if 0 > (crop_x_max+x_shift) else max_margin
+                    y_min = (crop_y_min+y_shift) if 0 <= (crop_y_min+y_shift) < max_margin else 0 if 0 > (crop_y_min+y_shift) else max_margin
+                    y_max = (crop_y_max+y_shift) if 0 <= (crop_y_max+y_shift) < max_margin else 0 if 0 > (crop_y_max+y_shift) else max_margin
                     tf_signal = tf[:, x_min:x_max, y_min:y_max]
                     tf_signal_values = tf_signal[nuc_label.astype(bool)]
                     if len(tf_signal_values) > 0:
