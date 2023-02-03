@@ -2,7 +2,6 @@ import click
 from TF_quant_simple import *
 from time import time
 from Align_cameras import *
-from Label_read import *
 from ErodeLabels import *
 
 __version__ = "1.4"
@@ -12,9 +11,12 @@ def cli():
     pass
 
 @cli.command()
-@click.option('--orig_image_dir',required=True,
+@click.option('--nucl_image_dir',required=True,
               type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
-              help="Original klb/tif/h5/npy files.")
+              help="Original nuclei klb/tif/h5/npy files.")
+@click.option('--membrane_image_dir',required=False,
+              type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
+              help="Original uncropped membrane klb/tif/h5/npy files.")
 @click.option('--nucl_seg_dir',required=True, default='',
               type=click.Path(file_okay=False,dir_okay=True,readable=True),
               help="Directory with nuclei segmentation in same format as original images, klb/tif/h5/npy files.")
@@ -43,7 +45,7 @@ def cli():
               help="X shift for camera alignment. For our 210809 data, for Cdx2, Masha found x_shift = -11.")
 @click.option("--y_shift_override", required=False, default=0, type=click.INT,
               help="Y shift for camera alignment. For our 210809 data, for Cdx2, Masha found y_shift = 15")
-def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, cropbox_index,
+def tf_align_simple(nucl_image_dir, membrane_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, cropbox_index,
                 timestamp_min, timestamp_max, offset, cell_volume_cutoff, max_margin, align_camera,
                     x_shift_override, y_shift_override):
 
@@ -51,7 +53,7 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
     y_shift = 0
     if align_camera:
         images = [os.path.join(dp, f)
-                  for dp, dn, filenames in os.walk(orig_image_dir)
+                  for dp, dn, filenames in os.walk(nucl_image_dir)
                   for f in filenames if (os.path.splitext(f)[1] == '.klb' or
                                          os.path.splitext(f)[1] == '.h5' or
                                          os.path.splitext(f)[1] == '.tif' or
@@ -106,25 +108,31 @@ def tf_align_simple(orig_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, c
 
     click.echo('Extracting transcription factor intensity...')
     t0 = time()
-    mem_tf_vals, nuc_tf_vals, mem_vols, nuc_vols = quantify_tf(orig_image_dir, membrane_seg_dir, nucl_seg_dir, crop_dir,
+    nuc_tf_vals, nuc_vols = quantify_tf_nucl(nucl_image_dir, nucl_seg_dir, crop_dir,
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
                                            timestamp_max, offset, max_margin, x_shift, y_shift)
 
-    if len(mem_tf_vals)>0:
-        with open(os.path.join(crop_dir,'membrane_tf.csv'), 'w') as f_out:
-            f_out.write("Timestamp, Label ID, Mean Label Intensity, Label Volume\n")
-            for time_index, labels in mem_tf_vals.items():
-                for label_id, intensity in labels.items():
-                    f_out.write(str(time_index) + ',' + str(label_id) + ',' + str(intensity)
-                                + ',' + str(mem_vols[time_index][label_id]) + '\n')
-
-    if len(nuc_tf_vals)>0:
+    if len(nuc_tf_vals) > 0:
         with open(os.path.join(crop_dir,'nuclei_tf.csv'), 'w') as f_out:
             f_out.write("Timestamp, Label ID, Mean Label Intensity, Label Volume\n")
             for time_index, labels in nuc_tf_vals.items():
                 for label_id, intensity in labels.items():
                     f_out.write(str(time_index) + ',' + str(label_id) + ',' + str(intensity)
                                 + ',' + str(nuc_vols[time_index][label_id]) + '\n')
+
+    if membrane_image_dir is not None and membrane_seg_dir is not None and \
+            os.path.exists(membrane_image_dir) and os.path.exists(membrane_seg_dir):
+        mem_tf_vals, mem_vols = quantify_tf_mebrane(membrane_image_dir, membrane_seg_dir, crop_dir,
+                                           cropbox_index, cell_volume_cutoff, timestamp_min,
+                                           timestamp_max, offset, max_margin, x_shift, y_shift)
+
+        if len(mem_tf_vals) > 0:
+            with open(os.path.join(crop_dir,'membrane_tf.csv'), 'w') as f_out:
+                f_out.write("Timestamp, Label ID, Mean Label Intensity, Label Volume\n")
+                for time_index, labels in mem_tf_vals.items():
+                    for label_id, intensity in labels.items():
+                        f_out.write(str(time_index) + ',' + str(label_id) + ',' + str(intensity)
+                                    + ',' + str(mem_vols[time_index][label_id]) + '\n')
 
     t1 = time() - t0
     click.echo('Transcription factor intensity files generated here:' + crop_dir)

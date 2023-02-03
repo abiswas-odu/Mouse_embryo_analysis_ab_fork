@@ -4,11 +4,10 @@ from skimage.transform import rescale
 from Label_read import *
 import os
 
-# Quantifies TF intensity in cells and nuclei for provided raw images and corresponding membrane and nuclear segmentation
+# Quantifies TF intensity in cells and nuclei for provided raw images and nuclear segmentation
 
 # Parameters:
 # # raw_dir = path prefix for raw data (including channel)
-# # mem_segm_dir = directory with membrane segmentation results
 # # nuc_segm_dir = directory with nuclear segmentation results
 # # cell_volume_cutoff = cell volume below which cells are not considered;
 # # max_time = up to which time you need to quantify;
@@ -18,13 +17,9 @@ import os
 # # x_shift and y_shift can be used for camera alignment. For our 210809 data, for Cdx2, I found x_shift = -11, y_shift = 15.
 
 # Returns:
-# # mem_tf_vals = dictionary of membrane intensities indexed by (timepoint, label)
 # # nuc_tf_vals = dictionary of nuclear intensities indexed by (timepoint, label)
 
-# Will return an empty dictionary if one of the segmentation types is unavailable
-
-
-def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
+def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                 crop_box_index=0, cell_volume_cutoff=0, min_time=0,
                 max_time=-1, offset=150,
                 max_margin=2048, x_shift=0, y_shift=0):
@@ -42,7 +37,7 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
 
     # read TF filenames recursively
     images = [os.path.join(dp, f)
-              for dp, dn, filenames in os.walk(raw_dir)
+              for dp, dn, filenames in os.walk(nucl_raw_dir)
               for f in filenames if (os.path.splitext(f)[1] == '.klb' or
                                      os.path.splitext(f)[1] == '.h5' or
                                      os.path.splitext(f)[1] == '.tif' or
@@ -50,8 +45,6 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
 
     nuc_tf_vals = {}
     nuc_vols = {}
-    mem_tf_vals = {}
-    mem_vols = {}
 
     # Set max_time to the len-1 to that we can loop till last
     if max_time == -1:
@@ -86,6 +79,76 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
                     if lab != 0:
                         nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
                         nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
+        except Exception as e:
+            print('Skipping image: ' + str(im))
+            print('Exception:')
+            print(e)
+    return nuc_tf_vals, nuc_vols
+
+
+# Quantifies TF intensity in cells for raw images and corresponding membrane segmentation
+
+# Parameters:
+# # raw_dir = path prefix for raw data (including channel)
+# # mem_segm_dir = directory with membrane segmentation results
+# # cell_volume_cutoff = cell volume below which cells are not considered;
+# # max_time = up to which time you need to quantify;
+# # offset = offset that was used for cropping;
+# # max_margin = 2048, original size of images;
+# # which_cam = which camera to quantify, e.g., ‘Long’ for Yap;
+# # x_shift and y_shift can be used for camera alignment. For our 210809 data, for Cdx2, I found x_shift = -11, y_shift = 15.
+
+# Returns:
+# # mem_tf_vals = dictionary of membrane intensities indexed by (timepoint, label)
+
+def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
+                crop_box_index=0, cell_volume_cutoff=0, min_time=0,
+                max_time=-1, offset=150,
+                max_margin=2048, x_shift=0, y_shift=0):
+
+    # read cropboxes
+    vpairs = pd.read_csv(os.path.join(crop_dir,'vpairs.csv'), index_col=[0])
+    hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col=[0])
+    vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
+    hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
+    crop_y_min = max(hpairs[0]-offset,0)
+    crop_y_max = min(hpairs[1]+offset, max_margin)
+    crop_x_min = max(vpairs[0]-offset,0)
+    crop_x_max = min(vpairs[1]+offset, max_margin)
+    print('Cropboxes found...')
+
+    # read TF filenames recursively
+    images = [os.path.join(dp, f)
+              for dp, dn, filenames in os.walk(membrane_raw_dir)
+              for f in filenames if (os.path.splitext(f)[1] == '.klb' or
+                                     os.path.splitext(f)[1] == '.h5' or
+                                     os.path.splitext(f)[1] == '.tif' or
+                                     os.path.splitext(f)[1] == '.npy')]
+
+    nuc_tf_vals = {}
+    nuc_vols = {}
+    mem_tf_vals = {}
+    mem_vols = {}
+
+    # Set max_time to the len-1 to that we can loop till last
+    if max_time == -1:
+        max_time = len(images) - 1
+
+    # loop through timepoints
+    images = np.sort(images)
+    for i, im in enumerate(images[min_time:max_time+1]):
+        try:
+            image_file_str = str(im)
+            print('Processing: '+ image_file_str)
+            a = read_image(image_file_str)
+            a = a[:, (crop_x_min+x_shift):(crop_x_max+x_shift), (crop_y_min+y_shift):(crop_y_max+y_shift)]
+            dir_name = os.path.dirname(image_file_str)
+
+            cur_name = os.path.basename(image_file_str)
+            file_prefix = os.path.splitext(cur_name)[0]
+            file_ext = os.path.splitext(cur_name)[1]
+            file_base = os.path.basename(cur_name).split(os.extsep)
+            time_index = int(file_base[0].split('_')[-1])
 
             #Extract membrane channel data
             mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane")
@@ -106,5 +169,4 @@ def quantify_tf(raw_dir, mem_segm_dir, nucl_segm_dir, crop_dir,
             print('Skipping image: ' + str(im))
             print('Exception:')
             print(e)
-    return mem_tf_vals, nuc_tf_vals, mem_vols, nuc_vols
-
+    return mem_tf_vals, mem_vols
