@@ -18,9 +18,13 @@ def read_segments(data_dir, file_prefix, file_ext, segmentation_type):
     # nuclei
     try:
         if segmentation_type == "membrane":
-            label_mask = read_image(construct_membrane_file(data_dir, file_prefix, file_ext))
+            label_file = construct_membrane_file(data_dir, file_prefix, file_ext)
+            if os.path.exists(label_file):
+                label_mask = read_image(label_file)
         else:
-            label_mask = read_image(construct_nucl_file(data_dir, file_prefix, file_ext))
+            label_file = construct_nucl_file(data_dir, file_prefix, file_ext)
+            if os.path.exists(label_file):
+                label_mask = read_image(label_file)
     except Exception as e:
             print('Problem with reading segments', e)
     return label_mask
