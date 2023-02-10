@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=erode_labels  # create a short name for your job
+#SBATCH --job-name=extract_TF    # create a short name for your job
 #SBATCH --nodes=1                # node count
 #SBATCH --ntasks=1               # total number of tasks across all nodes
 #SBATCH --mem=40G                # total memory per node
@@ -8,10 +8,11 @@
 #SBATCH -A molbio
 
 
-IMAGE_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/image_data"
-NUCL_SEG_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/nucl_seg"
-MEMBRANE_SEG_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/mem_seg"
-CROP_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/output"
+NUCL_IMAGE_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nuclei_images"
+MEMBRANE_IMAGE_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/membrane_images"
+NUCL_SEG_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nucl_seg"
+MEMBRANE_SEG_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/mem_seg"
+CROP_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/crop"
 timestamp_min="0"
 timestamp_max="10"
 
@@ -22,6 +23,14 @@ timestamp_max="10"
 crop_index="0"
 offset="150"
 cell_volume_cutoff="2000"
+image_size="2048"
+
+## Change to 0, to not align camera automatically and use override.
+## If set to 1, the overrides are ignored
+align_camera="0"
+x_shift_override="24"
+y_shift_override="23"
+
 
 ##===================================================================================================
 ##==============================NO CHANGES BELOW THIS LINE===========================================
@@ -40,8 +49,9 @@ conda activate /projects/LIGHTSHEET/posfailab/ab50/tools/tf2-posfai
 SCRIPT_PATH=/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork
 
 python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
-  --orig_image_dir ${IMAGE_DIR} \
+  --nucl_image_dir ${NUCL_IMAGE_DIR} \
   --nucl_seg_dir ${NUCL_SEG_DIR} \
+  --membrane_image_dir ${MEMBRANE_IMAGE_DIR} \
   --membrane_seg_dir ${MEMBRANE_SEG_DIR} \
   --crop_dir ${CROP_DIR} \
   --cropbox_index ${crop_index} \
@@ -50,7 +60,9 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --offset ${offset} \
   --cell_volume_cutoff ${cell_volume_cutoff} \
   --max_margin ${image_size} \
-  --align_camera 1
+  --align_camera ${align_camera} \
+  --x_shift_override ${x_shift_override} \
+  --y_shift_override ${y_shift_override}
 
 echo Ending time is $(date)
 endtime=$(date +"%s")
