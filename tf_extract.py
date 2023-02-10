@@ -14,6 +14,9 @@ def cli():
 @click.option('--nucl_image_dir',required=True,
               type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
               help="Original nuclei klb/tif/h5/npy files.")
+@click.option('--tf_signal_image_dir',required=True,
+              type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
+              help="TF signal klb/tif/h5/npy files.")
 @click.option('--membrane_image_dir',required=False,
               type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
               help="Original uncropped membrane klb/tif/h5/npy files.")
@@ -45,7 +48,7 @@ def cli():
               help="X shift for camera alignment. For our 210809 data, for Cdx2, Masha found x_shift = -11.")
 @click.option("--y_shift_override", required=False, default=0, type=click.INT,
               help="Y shift for camera alignment. For our 210809 data, for Cdx2, Masha found y_shift = 15")
-def tf_align_simple(nucl_image_dir, membrane_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, cropbox_index,
+def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nucl_seg_dir, membrane_seg_dir,  crop_dir, cropbox_index,
                 timestamp_min, timestamp_max, offset, cell_volume_cutoff, max_margin, align_camera,
                     x_shift_override, y_shift_override):
 
@@ -108,7 +111,7 @@ def tf_align_simple(nucl_image_dir, membrane_image_dir, nucl_seg_dir, membrane_s
 
     click.echo('Extracting transcription factor intensity...')
     t0 = time()
-    nuc_tf_vals, nuc_vols = quantify_tf_nucl(nucl_image_dir, nucl_seg_dir, crop_dir,
+    nuc_tf_vals, nuc_vols = quantify_tf_nucl(tf_signal_image_dir, nucl_seg_dir, crop_dir,
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
                                            timestamp_max, offset, max_margin, x_shift, y_shift)
 

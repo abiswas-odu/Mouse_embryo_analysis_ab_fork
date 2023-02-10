@@ -9,6 +9,7 @@
 
 
 NUCL_IMAGE_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nuclei_images"
+TF_IMAGE_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nuclei_images"
 NUCL_SEG_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nucl_seg"
 CROP_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/crop"
 timestamp_min="0"
@@ -47,6 +48,7 @@ SCRIPT_PATH=/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fo
 
 python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --nucl_image_dir ${NUCL_IMAGE_DIR} \
+  --tf_signal_image_dir ${TF_IMAGE_DIR} \
   --nucl_seg_dir ${NUCL_SEG_DIR} \
   --crop_dir ${CROP_DIR} \
   --cropbox_index ${crop_index} \

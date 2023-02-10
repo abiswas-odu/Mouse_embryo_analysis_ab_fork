@@ -9,6 +9,7 @@
 
 
 NUCL_IMAGE_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nuclei_images"
+TF_IMAGE_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nuclei_images"
 MEMBRANE_IMAGE_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/membrane_images"
 NUCL_SEG_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nucl_seg"
 MEMBRANE_SEG_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/mem_seg"
@@ -27,10 +28,9 @@ image_size="2048"
 
 ## Change to 0, to not align camera automatically and use override.
 ## If set to 1, the overrides are ignored
-align_camera="0"
+align_camera="1"
 x_shift_override="24"
 y_shift_override="23"
-
 
 ##===================================================================================================
 ##==============================NO CHANGES BELOW THIS LINE===========================================
@@ -50,6 +50,7 @@ SCRIPT_PATH=/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fo
 
 python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --nucl_image_dir ${NUCL_IMAGE_DIR} \
+  --tf_signal_image_dir ${TF_IMAGE_DIR} \
   --nucl_seg_dir ${NUCL_SEG_DIR} \
   --membrane_image_dir ${MEMBRANE_IMAGE_DIR} \
   --membrane_seg_dir ${MEMBRANE_SEG_DIR} \
