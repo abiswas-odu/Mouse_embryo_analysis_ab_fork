@@ -31,14 +31,15 @@ def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index, offset =
 
     nuc_label = read_image(nucl_segm_image)
     nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
-
+    min_shift = -50
+    max_shift = 50
     if type(nuc_label) is np.ndarray:
         print('Nuclear Segmentations found...')
         tf = read_image(raw_image)
         mean_signal = {}
-        for x_shift in range(-50, 50):
+        for x_shift in range(min_shift, max_shift):
             mean_signal[x_shift] = {}
-            for y_shift in range(-50,50):
+            for y_shift in range(min_shift, max_shift):
                 try:
                     x_min = (crop_x_min+x_shift) if 0 <= (crop_x_min+x_shift) < max_margin else 0 if 0 > (crop_x_min+x_shift) else max_margin
                     x_max = (crop_x_max+x_shift) if 0 <= (crop_x_max+x_shift) < max_margin else 0 if 0 > (crop_x_max+x_shift) else max_margin

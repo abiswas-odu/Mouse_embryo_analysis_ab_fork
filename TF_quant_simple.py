@@ -52,7 +52,7 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
     
     # loop through timepoints
     images = np.sort(images)
-    for i, im in enumerate(images[min_time:max_time+1]):
+    for i, im in enumerate(images):
         try:
             image_file_str = str(im)
             print('Processing: '+ image_file_str)
@@ -60,25 +60,22 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
             a = a[:, (crop_x_min+x_shift):(crop_x_max+x_shift), (crop_y_min+y_shift):(crop_y_max+y_shift)]
             dir_name = os.path.dirname(image_file_str)
 
-            cur_name = os.path.basename(image_file_str)
-            file_prefix = os.path.splitext(cur_name)[0]
-            file_ext = os.path.splitext(cur_name)[1]
-            file_base = os.path.basename(cur_name).split(os.extsep)
-            time_index = int(file_base[0].split('_')[-1])
+            file_base, file_prefix, file_ext, time_index = get_filename_components(image_file_str)
 
-            # Get the nuclei label file names with same camera
-            # read segmentation results
-            nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext, "nuclei")
+            if time_index >= min_time and time_index <= max_time+1:
+                # Get the nuclei label file names with same camera
+                # read segmentation results
+                nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext, "nuclei")
 
-            #Extract nucl channel data
-            if type(nuc_label) is np.ndarray:
-                nuc_tf_vals[time_index] = {}
-                nuc_vols[time_index] = {}
-                nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
-                for lab in np.unique(nuc_label):
-                    if lab != 0:
-                        nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
-                        nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
+                #Extract nucl channel data
+                if type(nuc_label) is np.ndarray:
+                    nuc_tf_vals[time_index] = {}
+                    nuc_vols[time_index] = {}
+                    nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
+                    for lab in np.unique(nuc_label):
+                        if lab != 0:
+                            nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
+                            nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
         except Exception as e:
             print('Skipping image: ' + str(im))
             print('Exception:')
@@ -136,7 +133,7 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
 
     # loop through timepoints
     images = np.sort(images)
-    for i, im in enumerate(images[min_time:max_time+1]):
+    for i, im in enumerate(images):
         try:
             image_file_str = str(im)
             print('Processing: '+ image_file_str)
@@ -144,27 +141,25 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
             a = a[:, (crop_x_min+x_shift):(crop_x_max+x_shift), (crop_y_min+y_shift):(crop_y_max+y_shift)]
             dir_name = os.path.dirname(image_file_str)
 
-            cur_name = os.path.basename(image_file_str)
-            file_prefix = os.path.splitext(cur_name)[0]
-            file_ext = os.path.splitext(cur_name)[1]
-            file_base = os.path.basename(cur_name).split(os.extsep)
-            time_index = int(file_base[0].split('_')[-1])
+            file_base, file_prefix, file_ext, time_index = get_filename_components(image_file_str)
 
-            #Extract membrane channel data
-            mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane")
-            if type(mem_label) is np.ndarray:
-                a_mem = rescale(a, (1/(2*0.208),1/4,1/4), preserve_range = True, anti_aliasing = True)
-                sh = mem_label.shape
-                a_mem = a_mem[:sh[0], :sh[1], :sh[2]]
-                sh = a_mem.shape
-                mem_label = mem_label[:sh[0], :sh[1], :sh[2]]
-                mem_tf_vals[time_index] = {}
-                mem_vols[time_index] = {}
-                for lab in np.unique(mem_label):
-                    if lab != 0:
-                        if np.sum(mem_label == lab) >= cell_volume_cutoff:
-                            mem_tf_vals[time_index][lab] = np.mean(a_mem[mem_label == lab])
-                            mem_vols[time_index][lab] = np.count_nonzero(mem_label == lab)
+            # Check within range to be extracted
+            if time_index >= min_time and time_index <= max_time+1:
+                #Extract membrane channel data
+                mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane")
+                if type(mem_label) is np.ndarray:
+                    a_mem = rescale(a, (1/(2*0.208),1/4,1/4), preserve_range = True, anti_aliasing = True)
+                    sh = mem_label.shape
+                    a_mem = a_mem[:sh[0], :sh[1], :sh[2]]
+                    sh = a_mem.shape
+                    mem_label = mem_label[:sh[0], :sh[1], :sh[2]]
+                    mem_tf_vals[time_index] = {}
+                    mem_vols[time_index] = {}
+                    for lab in np.unique(mem_label):
+                        if lab != 0:
+                            if np.sum(mem_label == lab) >= cell_volume_cutoff:
+                                mem_tf_vals[time_index][lab] = np.mean(a_mem[mem_label == lab])
+                                mem_vols[time_index][lab] = np.count_nonzero(mem_label == lab)
         except Exception as e:
             print('Skipping image: ' + str(im))
             print('Exception:')

@@ -63,40 +63,34 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
                                          os.path.splitext(f)[1] == '.npy')]
         images = np.sort(images)
 
+        # Filter images not in timestamp range
+        images = filter_timestamp_images(images, timestamp_min, timestamp_max)
+
         click.echo('Attempting to align cameras...')
         t0 = time()
         image_1_idx = 0
-        cur_name = os.path.basename(str(images[image_1_idx]))
-        file_prefix = os.path.splitext(cur_name)[0]
-        file_ext = os.path.splitext(cur_name)[1]
+        file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_1_idx]))
         nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
         x_shift_1, y_shift_1 = align_cameras(str(images[image_1_idx]), nucl_seg_file, crop_dir,
                                          cropbox_index, offset, max_margin)
-
-        print('Image 0 X-shift:' + str(x_shift_1))
-        print('Image 0 Y-shift:' + str(y_shift_1))
+        print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_1))
+        print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_1))
 
         image_mid_idx = int(len(images)/2)
-        cur_name = os.path.basename(images[image_mid_idx])
-        file_prefix = os.path.splitext(cur_name)[0]
-        file_ext = os.path.splitext(cur_name)[1]
+        file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_mid_idx]))
         nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
         x_shift_2, y_shift_2 = align_cameras(str(images[image_mid_idx]), nucl_seg_file, crop_dir,
                                              cropbox_index, offset, max_margin)
-
-        print('Image ' + str(image_mid_idx) + ' X-shift:' + str(x_shift_2))
-        print('Image ' + str(image_mid_idx) + ' Y-shift:' + str(y_shift_2))
+        print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_2))
+        print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_2))
 
         image_n_idx = len(images) - 1
-        cur_name = os.path.basename(images[image_n_idx])
-        file_prefix = os.path.splitext(cur_name)[0]
-        file_ext = os.path.splitext(cur_name)[1]
+        file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_n_idx]))
         nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
         x_shift_3, y_shift_3 = align_cameras(str(images[image_n_idx]), nucl_seg_file, crop_dir,
                                              cropbox_index, offset, max_margin)
-
-        print('Image ' + str(image_n_idx) + ' X-shift:' + str(x_shift_3))
-        print('Image ' + str(image_n_idx) + ' Y-shift:' + str(y_shift_3))
+        print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_3))
+        print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_3))
 
         x_shift = int(round((x_shift_1 + x_shift_2 + x_shift_3) / 3, 0))
         y_shift = int(round((y_shift_1 + y_shift_2 + y_shift_3) / 3, 0))

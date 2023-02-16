@@ -1,6 +1,6 @@
 from io_utils import read_image
 import os
-
+import numpy as np
 # Reads segmentation results for both membrane and nuclei
 
 # Parameters:
@@ -63,3 +63,28 @@ def construct_nucl_file(data_dir, file_prefix, file_ext):
             return nucl_segm_file_corrected
         elif os.path.exists(nucl_segm_file):
             return nucl_segm_file
+
+
+def get_filename_components(image_file_str):
+    cur_name = os.path.basename(image_file_str)
+    file_prefix = os.path.splitext(cur_name)[0]
+    file_ext = os.path.splitext(cur_name)[1]
+    file_base = os.path.basename(cur_name).split(os.extsep)
+    time_index = int(file_base[0].split('_')[-1])
+    return file_base, file_prefix, file_ext, time_index
+
+def filter_timestamp_images(images, min_time, max_time):
+    # Set max_time to the len-1 to that we can loop till last
+    if max_time == -1:
+        max_time = len(images) - 1
+    filtered_images = []
+    for i, im in enumerate(images):
+        image_file_str = str(im)
+        file_base, file_prefix, file_ext, time_index = get_filename_components(image_file_str)
+
+        # Check within range to be returned
+        if time_index >= min_time and time_index <= max_time+1:
+            filtered_images.append(image_file_str)
+    return np.array(filtered_images)
+
+

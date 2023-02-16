@@ -43,7 +43,7 @@ def erode_image_labels(image_file_str, nucl_segm_dir, out_path, footprint_size =
             for ilabel in labels:
                 if ilabel != 0:
                     # make binary image of this mask
-                    bin_label_im = np.zeros(big_label_im.shape,dtype=np.bool_)
+                    bin_label_im = np.zeros(big_label_im.shape, dtype=np.bool_)
                     ind = np.where(big_label_im == ilabel)
                     bin_label_im[ind] = 1
                     # erode it
