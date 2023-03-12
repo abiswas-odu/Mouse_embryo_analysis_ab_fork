@@ -62,7 +62,7 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
 
             file_base, file_prefix, file_ext, time_index = get_filename_components(image_file_str)
 
-            if time_index >= min_time and time_index <= max_time+1:
+            if time_index >= min_time and time_index < max_time+1:
                 # Get the nuclei label file names with same camera
                 # read segmentation results
                 nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext, "nuclei")
@@ -144,7 +144,7 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
             file_base, file_prefix, file_ext, time_index = get_filename_components(image_file_str)
 
             # Check within range to be extracted
-            if time_index >= min_time and time_index <= max_time+1:
+            if time_index >= min_time and time_index < max_time+1:
                 #Extract membrane channel data
                 mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane")
                 if type(mem_label) is np.ndarray:

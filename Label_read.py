@@ -83,7 +83,7 @@ def filter_timestamp_images(images, min_time, max_time):
         file_base, file_prefix, file_ext, time_index = get_filename_components(image_file_str)
 
         # Check within range to be returned
-        if time_index >= min_time and time_index <= max_time+1:
+        if time_index >= min_time and time_index < max_time+1:
             filtered_images.append(image_file_str)
     return np.array(filtered_images)
 
