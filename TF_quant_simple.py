@@ -167,7 +167,7 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
                 #Extract membrane channel data
                 mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane")
                 if type(mem_label) is np.ndarray:
-                    a_mem = rescale(a, (1/(2*0.208),1/4,1/4), preserve_range=True, anti_aliasing=True)
+                    a_mem = rescale(a, (1/(2*0.208), 1/4, 1/4), preserve_range=True, anti_aliasing=True)
                     sh = mem_label.shape
                     a_mem = a_mem[:sh[0], :sh[1], :sh[2]]
                     sh = a_mem.shape
