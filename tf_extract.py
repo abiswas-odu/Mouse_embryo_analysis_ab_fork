@@ -55,6 +55,9 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
     x_shift = 0
     y_shift = 0
     if align_camera:
+
+        # Limits of the shift
+        max_abs_alignment_shift = 50
         images = [os.path.join(dp, f)
                   for dp, dn, filenames in os.walk(nucl_image_dir)
                   for f in filenames if (os.path.splitext(f)[1] == '.klb' or
@@ -72,7 +75,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_1_idx]))
         nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
         x_shift_1, y_shift_1 = align_cameras(str(images[image_1_idx]), nucl_seg_file, crop_dir,
-                                         cropbox_index, offset, max_margin)
+                                         cropbox_index, max_abs_alignment_shift, offset, max_margin)
         print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_1))
         print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_1))
 
@@ -80,7 +83,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_mid_idx]))
         nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
         x_shift_2, y_shift_2 = align_cameras(str(images[image_mid_idx]), nucl_seg_file, crop_dir,
-                                             cropbox_index, offset, max_margin)
+                                             cropbox_index, max_abs_alignment_shift, offset, max_margin)
         print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_2))
         print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_2))
 
@@ -88,7 +91,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_n_idx]))
         nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
         x_shift_3, y_shift_3 = align_cameras(str(images[image_n_idx]), nucl_seg_file, crop_dir,
-                                             cropbox_index, offset, max_margin)
+                                             cropbox_index, max_abs_alignment_shift, offset, max_margin)
         print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_3))
         print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_3))
 
@@ -107,7 +110,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
     t0 = time()
     nuc_tf_vals, nuc_vols = quantify_tf_nucl(tf_signal_image_dir, nucl_seg_dir, crop_dir,
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
-                                           timestamp_max, offset, max_margin, x_shift, y_shift)
+                                           timestamp_max, offset, max_margin, max_abs_alignment_shift, x_shift, y_shift)
 
     if len(nuc_tf_vals) > 0:
         with open(os.path.join(crop_dir,'nuclei_tf.csv'), 'w') as f_out:
@@ -121,7 +124,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
             os.path.exists(membrane_image_dir) and os.path.exists(membrane_seg_dir):
         mem_tf_vals, mem_vols = quantify_tf_mebrane(membrane_image_dir, membrane_seg_dir, crop_dir,
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
-                                           timestamp_max, offset, max_margin, x_shift, y_shift)
+                                           timestamp_max, offset, max_margin, max_abs_alignment_shift, x_shift, y_shift)
 
         if len(mem_tf_vals) > 0:
             with open(os.path.join(crop_dir,'membrane_tf.csv'), 'w') as f_out:

@@ -18,28 +18,38 @@ from io_utils import read_image
 # # x_shift and y_shift that maximize the signal within the segments found through nuclear segmentation.
 
 
-def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index, offset = 150, max_margin = 2048):
-    vpairs = pd.read_csv(os.path.join(crop_dir,'vpairs.csv'), index_col = [0])
-    hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col = [0])
-    vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
-    hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
-    crop_y_min = max(hpairs[0]-offset,0)
-    crop_y_max = min(hpairs[1]+offset, max_margin)
-    crop_x_min = max(vpairs[0]-offset,0)
-    crop_x_max = min(vpairs[1]+offset, max_margin)
-    print('Cropboxes found...')
+def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index,
+                  max_abs_alignment_shift=50, offset=150, max_margin=2048):
+
+    # Check id corpboxes are present
+    vpairs_files = os.path.join(crop_dir,'vpairs.csv')
+    hpairs_files = os.path.join(crop_dir,'hpairs.csv')
+    if os.path.exists(vpairs_files) and os.path.exists(hpairs_files):
+        print('Cropboxes found...')
+        vpairs = pd.read_csv(vpairs_files, index_col = [0])
+        hpairs = pd.read_csv(hpairs_files, index_col = [0])
+        vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
+        hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
+        crop_y_min = max(hpairs[0]-offset,0)
+        crop_y_max = min(hpairs[1]+offset, max_margin)
+        crop_x_min = max(vpairs[0]-offset,0)
+        crop_x_max = min(vpairs[1]+offset, max_margin)
+    else: # If no cropboxes, trim out border shift space
+        print('Cropboxes not found found. Using full image with border trim of:' + str(max_abs_alignment_shift) + 'px')
+        crop_y_min = max_abs_alignment_shift
+        crop_y_max = max_margin - max_abs_alignment_shift
+        crop_x_min = max_abs_alignment_shift
+        crop_x_max = max_margin - max_abs_alignment_shift
 
     nuc_label = read_image(nucl_segm_image)
     nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
-    min_shift = -50
-    max_shift = 50
     if type(nuc_label) is np.ndarray:
         print('Nuclear Segmentations found...')
         tf = read_image(raw_image)
         mean_signal = {}
-        for x_shift in range(min_shift, max_shift):
+        for x_shift in range(-max_abs_alignment_shift, max_abs_alignment_shift):
             mean_signal[x_shift] = {}
-            for y_shift in range(min_shift, max_shift):
+            for y_shift in range(-max_abs_alignment_shift, max_abs_alignment_shift):
                 try:
                     x_min = (crop_x_min+x_shift) if 0 <= (crop_x_min+x_shift) < max_margin else 0 if 0 > (crop_x_min+x_shift) else max_margin
                     x_max = (crop_x_max+x_shift) if 0 <= (crop_x_max+x_shift) < max_margin else 0 if 0 > (crop_x_max+x_shift) else max_margin

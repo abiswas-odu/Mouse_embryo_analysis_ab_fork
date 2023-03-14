@@ -22,18 +22,27 @@ import os
 def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                 crop_box_index=0, cell_volume_cutoff=0, min_time=0,
                 max_time=-1, offset=150,
-                max_margin=2048, x_shift=0, y_shift=0):
-    
-    # read cropboxes
-    vpairs = pd.read_csv(os.path.join(crop_dir,'vpairs.csv'), index_col=[0])
-    hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col=[0])
-    vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
-    hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
-    crop_y_min = max(hpairs[0]-offset,0)
-    crop_y_max = min(hpairs[1]+offset, max_margin)
-    crop_x_min = max(vpairs[0]-offset,0)
-    crop_x_max = min(vpairs[1]+offset, max_margin)
-    print('Cropboxes found...')
+                max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
+    # Check id corpboxes are present
+    vpairs_files = os.path.join(crop_dir,'vpairs.csv')
+    hpairs_files = os.path.join(crop_dir,'hpairs.csv')
+    if os.path.exists(vpairs_files) and os.path.exists(hpairs_files):
+        print('Cropboxes found...')
+        # read cropboxes
+        vpairs = pd.read_csv(os.path.join(crop_dir,'vpairs.csv'), index_col=[0])
+        hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col=[0])
+        vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
+        hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
+        crop_y_min = max(hpairs[0]-offset,0)
+        crop_y_max = min(hpairs[1]+offset, max_margin)
+        crop_x_min = max(vpairs[0]-offset,0)
+        crop_x_max = min(vpairs[1]+offset, max_margin)
+    else: # If no cropboxes, trim out border for shift space
+        print('Cropboxes not found found. Using full image with border trim of:' + str(max_abs_alignment_shift) + 'px')
+        crop_y_min = max_abs_alignment_shift
+        crop_y_max = max_margin - max_abs_alignment_shift
+        crop_x_min = max_abs_alignment_shift
+        crop_x_max = max_margin - max_abs_alignment_shift
 
     # read TF filenames recursively
     images = [os.path.join(dp, f)
@@ -101,18 +110,28 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
 def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
                 crop_box_index=0, cell_volume_cutoff=0, min_time=0,
                 max_time=-1, offset=150,
-                max_margin=2048, x_shift=0, y_shift=0):
+                max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
 
-    # read cropboxes
-    vpairs = pd.read_csv(os.path.join(crop_dir,'vpairs.csv'), index_col=[0])
-    hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col=[0])
-    vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
-    hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
-    crop_y_min = max(hpairs[0]-offset,0)
-    crop_y_max = min(hpairs[1]+offset, max_margin)
-    crop_x_min = max(vpairs[0]-offset,0)
-    crop_x_max = min(vpairs[1]+offset, max_margin)
-    print('Cropboxes found...')
+    # Check id corpboxes are present
+    vpairs_files = os.path.join(crop_dir,'vpairs.csv')
+    hpairs_files = os.path.join(crop_dir,'hpairs.csv')
+    if os.path.exists(vpairs_files) and os.path.exists(hpairs_files):
+        print('Cropboxes found...')
+        # read cropboxes
+        vpairs = pd.read_csv(os.path.join(crop_dir,'vpairs.csv'), index_col=[0])
+        hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col=[0])
+        vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
+        hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
+        crop_y_min = max(hpairs[0]-offset,0)
+        crop_y_max = min(hpairs[1]+offset, max_margin)
+        crop_x_min = max(vpairs[0]-offset,0)
+        crop_x_max = min(vpairs[1]+offset, max_margin)
+    else: # If no cropboxes, trim out border for shift space
+        print('Cropboxes not found found. Using full image with border trim of:' + str(max_abs_alignment_shift) + 'px')
+        crop_y_min = max_abs_alignment_shift
+        crop_y_max = max_margin - max_abs_alignment_shift
+        crop_x_min = max_abs_alignment_shift
+        crop_x_max = max_margin - max_abs_alignment_shift
 
     # read TF filenames recursively
     images = [os.path.join(dp, f)
@@ -148,7 +167,7 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
                 #Extract membrane channel data
                 mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane")
                 if type(mem_label) is np.ndarray:
-                    a_mem = rescale(a, (1/(2*0.208),1/4,1/4), preserve_range = True, anti_aliasing = True)
+                    a_mem = rescale(a, (1/(2*0.208),1/4,1/4), preserve_range=True, anti_aliasing=True)
                     sh = mem_label.shape
                     a_mem = a_mem[:sh[0], :sh[1], :sh[2]]
                     sh = a_mem.shape

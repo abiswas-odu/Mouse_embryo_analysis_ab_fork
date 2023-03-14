@@ -12,6 +12,7 @@ NUCL_IMAGE_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_a
 TF_IMAGE_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nuclei_images"
 NUCL_SEG_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nucl_seg"
 CROP_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/crop"
+OUTPUT_FILE_NAME=""
 timestamp_min="0"
 timestamp_max="10"
 
