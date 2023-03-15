@@ -50,14 +50,26 @@ module load anaconda3/2020.11
 export LD_LIBRARY_PATH=/projects/LIGHTSHEET/posfailab/ab50/tools/keller-lab-block-filetype/build/src
 conda activate /projects/LIGHTSHEET/posfailab/ab50/tools/tf2-posfai
 
-SCRIPT_PATH=/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork
+## Loading directories to scratch
+SCARCH_RUN_DIR=/scratch/gpfs/${USER}/${SLURM_JOB_ID}
+mkdir ${SCARCH_RUN_DIR}/NUCL_IMAGE
+rsync -rLv ${NUCL_IMAGE_DIR} ${SCARCH_RUN_DIR}/NUCL_IMAGE
+mkdir ${SCARCH_RUN_DIR}/TF_IMAGE
+rsync -rLv ${TF_IMAGE_DIR} ${SCARCH_RUN_DIR}/TF_IMAGE
+mkdir ${SCARCH_RUN_DIR}/NUCL_SEG
+rsync -rLv ${NUCL_SEG_DIR} ${SCARCH_RUN_DIR}/NUCL_SEG
+mkdir ${SCARCH_RUN_DIR}/CROP
+[[ -n "$CROP_DIR" ]] && rsync -rLv ${$CROP_DIR} ${SCARCH_RUN_DIR}/CROP
+mkdir ${SCARCH_RUN_DIR}/OUT
 
+# Run the command off scratch
+SCRIPT_PATH=/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork
 python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
-  --nucl_image_dir ${NUCL_IMAGE_DIR} \
-  --tf_signal_image_dir ${TF_IMAGE_DIR} \
-  --nucl_seg_dir ${NUCL_SEG_DIR} \
-  [[ -n "$CROP_DIR" ]] && echo --crop_dir ${CROP_DIR} \
-  --out_dir ${OUT_DIR} \
+  --nucl_image_dir ${SCARCH_RUN_DIR}/NUCL_IMAGE \
+  --tf_signal_image_dir ${SCARCH_RUN_DIR}/TF_IMAGE \
+  --nucl_seg_dir ${SCARCH_RUN_DIR}/NUCL_SEG \
+  [[ -n "$CROP_DIR" ]] && echo --crop_dir ${SCARCH_RUN_DIR}/CROP \
+  --out_dir ${SCARCH_RUN_DIR}/OUT \
   --out_prefix ${OUTPUT_FILE_PREFIX} \
   --cropbox_index ${crop_index} \
   --timestamp_min ${timestamp_min} \
@@ -70,6 +82,10 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --max_absolute_shift ${max_abs_shift} \
   --x_shift_override ${x_shift_override} \
   --y_shift_override ${y_shift_override}
+
+# Copy output and remove files from scratch
+rsync -r ${SCARCH_RUN_DIR}/OUT ${OUT_DIR}
+rmdir $SCARCH_RUN_DIR
 
 echo Ending time is $(date)
 endtime=$(date +"%s")
