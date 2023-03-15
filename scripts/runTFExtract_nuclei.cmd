@@ -30,11 +30,11 @@ image_size="2048"
 ## If set to 1, the overrides are ignored 
 align_camera="1"
 align_cam_timestamps="0,4,9" # Pass an empty string "" if you want to use the first, mid and last
-max_abs_shift="50"    # The absolute value of MAX shift to be explored in X and Y for camera alignment.
-                      # Make ths small for faster alignment.
+max_abs_shift="50"           # The absolute value of MAX shift to be explored in X and Y for camera alignment.
+                             # Make ths small for faster alignment.
 
-x_shift_override="24" # Override for X shift if align_camera="0"
-y_shift_override="23" # Override for X shift if align_camera="1"
+x_shift_override="24"        # Override for X shift if align_camera="0"
+y_shift_override="23"        # Override for X shift if align_camera="1"
 
 ##===================================================================================================
 ##==============================NO CHANGES BELOW THIS LINE===========================================
@@ -52,14 +52,15 @@ conda activate /projects/LIGHTSHEET/posfailab/ab50/tools/tf2-posfai
 
 ## Loading directories to scratch
 SCARCH_RUN_DIR=/scratch/gpfs/${USER}/${SLURM_JOB_ID}
+mkdir ${SCARCH_RUN_DIR}
 mkdir ${SCARCH_RUN_DIR}/NUCL_IMAGE
-rsync -rLv ${NUCL_IMAGE_DIR} ${SCARCH_RUN_DIR}/NUCL_IMAGE
+rsync -rLv ${NUCL_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/NUCL_IMAGE
 mkdir ${SCARCH_RUN_DIR}/TF_IMAGE
-rsync -rLv ${TF_IMAGE_DIR} ${SCARCH_RUN_DIR}/TF_IMAGE
+rsync -rLv ${TF_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/TF_IMAGE
 mkdir ${SCARCH_RUN_DIR}/NUCL_SEG
-rsync -rLv ${NUCL_SEG_DIR} ${SCARCH_RUN_DIR}/NUCL_SEG
+rsync -rLv ${NUCL_SEG_DIR}/ ${SCARCH_RUN_DIR}/NUCL_SEG
 mkdir ${SCARCH_RUN_DIR}/CROP
-[[ -n "$CROP_DIR" ]] && rsync -rLv ${$CROP_DIR} ${SCARCH_RUN_DIR}/CROP
+[[ -n "$CROP_DIR" ]] && rsync -rLv ${CROP_DIR}/ ${SCARCH_RUN_DIR}/CROP
 mkdir ${SCARCH_RUN_DIR}/OUT
 
 # Run the command off scratch
@@ -68,7 +69,7 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --nucl_image_dir ${SCARCH_RUN_DIR}/NUCL_IMAGE \
   --tf_signal_image_dir ${SCARCH_RUN_DIR}/TF_IMAGE \
   --nucl_seg_dir ${SCARCH_RUN_DIR}/NUCL_SEG \
-  [[ -n "$CROP_DIR" ]] && echo --crop_dir ${SCARCH_RUN_DIR}/CROP \
+  --crop_dir ${SCARCH_RUN_DIR}/CROP \
   --out_dir ${SCARCH_RUN_DIR}/OUT \
   --out_prefix ${OUTPUT_FILE_PREFIX} \
   --cropbox_index ${crop_index} \
@@ -84,8 +85,8 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --y_shift_override ${y_shift_override}
 
 # Copy output and remove files from scratch
-rsync -r ${SCARCH_RUN_DIR}/OUT ${OUT_DIR}
-rmdir $SCARCH_RUN_DIR
+rsync -r ${SCARCH_RUN_DIR}/OUT/ ${OUT_DIR}
+rm -rf $SCARCH_RUN_DIR
 
 echo Ending time is $(date)
 endtime=$(date +"%s")
