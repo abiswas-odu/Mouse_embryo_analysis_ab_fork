@@ -4,7 +4,7 @@ from time import time
 from Align_cameras import *
 from ErodeLabels import *
 
-__version__ = "1.5"
+__version__ = "2.0"
 
 @click.group()
 def cli():
