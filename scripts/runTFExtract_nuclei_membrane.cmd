@@ -32,7 +32,7 @@ image_size="2048"
 ## If set to 1, the overrides are ignored
 align_camera="1"
 align_cam_timestamps="0,4,9" # Pass an empty string "" if you want to use the first, mid and last
-max_abs_shift="50"           # The absolute value of MAX shift to be explored in X and Y for camera alignment.
+max_abs_shift="10"           # The absolute value of MAX shift to be explored in X and Y for camera alignment.
                              # Make ths small for faster alignment.
 
 x_shift_override="24"        # Override for X shift if align_camera="0"
