@@ -1,7 +1,7 @@
-import numpy as np
 import pandas as pd
 from Label_read import *
 from io_utils import read_image
+from cropbox_loader import load_cropboxes
 
 # This method aligns Short camera to Long one, to be used for TF quantification obtained with Cam_Short.
 # The code works under the assumption that TF should be localized in the nucleus.
@@ -21,25 +21,8 @@ from io_utils import read_image
 def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index,
                   max_abs_alignment_shift=50, offset=150, max_margin=2048):
 
-    # Check id corpboxes are present
-    vpairs_files = os.path.join(crop_dir,'vpairs.csv')
-    hpairs_files = os.path.join(crop_dir,'hpairs.csv')
-    if os.path.exists(vpairs_files) and os.path.exists(hpairs_files):
-        print('Cropboxes found...')
-        vpairs = pd.read_csv(vpairs_files, index_col = [0])
-        hpairs = pd.read_csv(hpairs_files, index_col = [0])
-        vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
-        hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
-        crop_y_min = max(hpairs[0]-offset,0)
-        crop_y_max = min(hpairs[1]+offset, max_margin)
-        crop_x_min = max(vpairs[0]-offset,0)
-        crop_x_max = min(vpairs[1]+offset, max_margin)
-    else: # If no cropboxes, trim out border shift space
-        print('Cropboxes not found found. Using full image with border trim of:' + str(max_abs_alignment_shift) + 'px')
-        crop_y_min = max_abs_alignment_shift
-        crop_y_max = max_margin - max_abs_alignment_shift
-        crop_x_min = max_abs_alignment_shift
-        crop_x_max = max_margin - max_abs_alignment_shift
+    crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
+                                                                    offset, max_margin, max_abs_alignment_shift)
 
     nuc_label = read_image(nucl_segm_image)
     nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]

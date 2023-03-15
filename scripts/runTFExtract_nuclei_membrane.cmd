@@ -14,6 +14,8 @@ MEMBRANE_IMAGE_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analy
 NUCL_SEG_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/nucl_seg"
 MEMBRANE_SEG_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/mem_seg"
 CROP_DIR="/projects/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/crop"
+OUT_DIR="/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork/test/extract_test/output"
+OUTPUT_FILE_PREFIX="test"
 timestamp_min="0"
 timestamp_max="10"
 
@@ -29,6 +31,11 @@ image_size="2048"
 ## Change to 0, to not align camera automatically and use override.
 ## If set to 1, the overrides are ignored
 align_camera="1"
+align_camera="1"
+align_cam_timestamps="0,4,9" # Pass an empty string "" if you want to use the first, mid and last
+max_abs_shift="50"    # The absolute value of MAX shift to be explored in X and Y for camera alignment.
+                      # Make ths small for faster alignment.
+
 x_shift_override="24"
 y_shift_override="23"
 
@@ -54,7 +61,9 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --nucl_seg_dir ${NUCL_SEG_DIR} \
   --membrane_image_dir ${MEMBRANE_IMAGE_DIR} \
   --membrane_seg_dir ${MEMBRANE_SEG_DIR} \
-  --crop_dir ${CROP_DIR} \
+  [[ -n "$CROP_DIR" ]] && echo --crop_dir ${CROP_DIR} \
+  --out_dir ${OUT_DIR} \
+  --out_prefix ${OUTPUT_FILE_PREFIX} \
   --cropbox_index ${crop_index} \
   --timestamp_min ${timestamp_min} \
   --timestamp_max ${timestamp_max} \
@@ -62,6 +71,8 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --cell_volume_cutoff ${cell_volume_cutoff} \
   --max_margin ${image_size} \
   --align_camera ${align_camera} \
+  --align_camera_timestamps ${align_cam_timestamps} \
+  --max_absolute_shift ${max_abs_shift} \
   --x_shift_override ${x_shift_override} \
   --y_shift_override ${y_shift_override}
 

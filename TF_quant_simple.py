@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from skimage.transform import rescale
+from cropbox_loader import load_cropboxes
 from Label_read import *
 import os
 
@@ -23,26 +24,9 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                 crop_box_index=0, cell_volume_cutoff=0, min_time=0,
                 max_time=-1, offset=150,
                 max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
-    # Check id corpboxes are present
-    vpairs_files = os.path.join(crop_dir,'vpairs.csv')
-    hpairs_files = os.path.join(crop_dir,'hpairs.csv')
-    if os.path.exists(vpairs_files) and os.path.exists(hpairs_files):
-        print('Cropboxes found...')
-        # read cropboxes
-        vpairs = pd.read_csv(os.path.join(crop_dir,'vpairs.csv'), index_col=[0])
-        hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col=[0])
-        vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
-        hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
-        crop_y_min = max(hpairs[0]-offset,0)
-        crop_y_max = min(hpairs[1]+offset, max_margin)
-        crop_x_min = max(vpairs[0]-offset,0)
-        crop_x_max = min(vpairs[1]+offset, max_margin)
-    else: # If no cropboxes, trim out border for shift space
-        print('Cropboxes not found found. Using full image with border trim of:' + str(max_abs_alignment_shift) + 'px')
-        crop_y_min = max_abs_alignment_shift
-        crop_y_max = max_margin - max_abs_alignment_shift
-        crop_x_min = max_abs_alignment_shift
-        crop_x_max = max_margin - max_abs_alignment_shift
+
+    crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
+                                                                    offset, max_margin, max_abs_alignment_shift)
 
     # read TF filenames recursively
     images = [os.path.join(dp, f)
@@ -112,27 +96,8 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
                 max_time=-1, offset=150,
                 max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
 
-    # Check id corpboxes are present
-    vpairs_files = os.path.join(crop_dir,'vpairs.csv')
-    hpairs_files = os.path.join(crop_dir,'hpairs.csv')
-    if os.path.exists(vpairs_files) and os.path.exists(hpairs_files):
-        print('Cropboxes found...')
-        # read cropboxes
-        vpairs = pd.read_csv(os.path.join(crop_dir,'vpairs.csv'), index_col=[0])
-        hpairs = pd.read_csv(os.path.join(crop_dir,'hpairs.csv'), index_col=[0])
-        vpairs = tuple(map(int, vpairs['all'][crop_box_index][1:-1].split(', ')))
-        hpairs = tuple(map(int, hpairs['all'][crop_box_index][1:-1].split(', ')))
-        crop_y_min = max(hpairs[0]-offset,0)
-        crop_y_max = min(hpairs[1]+offset, max_margin)
-        crop_x_min = max(vpairs[0]-offset,0)
-        crop_x_max = min(vpairs[1]+offset, max_margin)
-    else: # If no cropboxes, trim out border for shift space
-        print('Cropboxes not found found. Using full image with border trim of:' + str(max_abs_alignment_shift) + 'px')
-        crop_y_min = max_abs_alignment_shift
-        crop_y_max = max_margin - max_abs_alignment_shift
-        crop_x_min = max_abs_alignment_shift
-        crop_x_max = max_margin - max_abs_alignment_shift
-
+    crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
+                                                                    offset, max_margin, max_abs_alignment_shift)
     # read TF filenames recursively
     images = [os.path.join(dp, f)
               for dp, dn, filenames in os.walk(membrane_raw_dir)

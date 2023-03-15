@@ -23,13 +23,12 @@ def cli():
 @click.option('--nucl_seg_dir',required=True, default='',
               type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
               help="Directory with nuclei segmentation in same format as original images, klb/tif/h5/npy files.")
-@click.option('--membrane_seg_dir',required=False, default='',
-              type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
+@click.option('--membrane_seg_dir', required=False,
+              type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True),
               help="Directory with membrane segmentation in same format as original images, klb/tif/h5/npy files.")
-@click.option('--crop_dir',required=True,
-              type=click.Path(exists=True,file_okay=False,dir_okay=True,readable=True),
-              help="The directory with hpair.csv and vpair.csv generated with generate-cropboxes. "
-                   "This is also the OUTPUT directory.")
+@click.option('--crop_dir', required=False,
+              type=click.Path(exists=False, file_okay=False, dir_okay=True, readable=True),
+              help="The directory with hpair.csv and vpair.csv generated with generate-cropboxes.")
 @click.option('--out_dir',required=True,
               type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True),
               help="Directory where the extractions will be saved.")
@@ -52,6 +51,8 @@ def cli():
 @click.option("--align_camera_timestamps", required=False, default='', type=click.STRING,
               help="Comma separated list of timestamps to be used to align the camera. " +
                    "Default uses 1st, middle and last images.")
+@click.option("--max_absolute_shift", required=False, default=5, type=click.INT,
+              help="Absolute MAX shift to explored in X and Y for camera alignment.")
 @click.option("--x_shift_override", required=False, default=0, type=click.INT,
               help="X shift for camera alignment. For our 210809 data, for Cdx2, Masha found x_shift = -11.")
 @click.option("--y_shift_override", required=False, default=0, type=click.INT,
@@ -59,11 +60,11 @@ def cli():
 def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nucl_seg_dir, membrane_seg_dir,
                     crop_dir, out_dir, out_prefix, cropbox_index,
                     timestamp_min, timestamp_max, offset,
-                    cell_volume_cutoff, max_margin, align_camera, align_camera_timestamps,
+                    cell_volume_cutoff, max_margin, align_camera, align_camera_timestamps,max_absolute_shift,
                     x_shift_override, y_shift_override):
 
     # Max. Limits of the shift
-    max_abs_alignment_shift = 50
+    max_abs_alignment_shift = max_absolute_shift
     x_shift = 0
     y_shift = 0
 
@@ -82,23 +83,26 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         click.echo('Attempting to align cameras...')
 
         # split columns by ',' and remove whitespace
-        align_camera_timestamps_list = [c.strip() for c in align_camera_timestamps.split(',')]
-        if len(align_camera_timestamps_list) == 0:
+        if align_camera_timestamps == '':
             align_camera_timestamps_list = [0, int(len(images)/2), len(images) - 1]
-        click.echo('Align cameras with timestamp' + ','.join(align_camera_timestamps_list))
+        else:
+            align_camera_timestamps_list = [int(c.strip()) for c in align_camera_timestamps.split(',')]
+
+        print('Align cameras with timestamps:', align_camera_timestamps_list)
         t0 = time()
         for image_idx in align_camera_timestamps_list:
-            file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_idx]))
-            nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
-            x_shift_i, y_shift_i = align_cameras(str(images[image_idx]), nucl_seg_file, crop_dir,
-                                                 cropbox_index, max_abs_alignment_shift, offset, max_margin)
-            print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_i))
-            print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_i))
-            x_shift = x_shift + x_shift_i
-            y_shift = y_shift + y_shift_i
+            if image_idx < len(images):
+                file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_idx]))
+                nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
+                x_shift_i, y_shift_i = align_cameras(str(images[image_idx]), nucl_seg_file, crop_dir,
+                                                     cropbox_index, max_abs_alignment_shift, offset, max_margin)
+                print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_i))
+                print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_i))
+                x_shift = x_shift + x_shift_i
+                y_shift = y_shift + y_shift_i
 
-        x_shift = int(round(x_shift / 3, 0))
-        y_shift = int(round(y_shift / 3, 0))
+        x_shift = int(round(x_shift / len(align_camera_timestamps_list), 0))
+        y_shift = int(round(y_shift / len(align_camera_timestamps_list), 0))
         print('Mean X-shift:' + str(x_shift))
         print('Mean Y-shift:' + str(y_shift))
 
