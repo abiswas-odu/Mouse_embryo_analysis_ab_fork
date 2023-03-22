@@ -141,7 +141,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
                                     + ',' + str(mem_vols[time_index][label_id]) + '\n')
 
     t1 = time() - t0
-    click.echo('Transcription factor intensity files generated here:' + crop_dir)
+    click.echo('Transcription factor intensity files generated here:' + out_dir)
     click.echo("Time elapsed: " + str(t1))
 
 @cli.command()
