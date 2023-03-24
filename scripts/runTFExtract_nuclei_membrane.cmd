@@ -27,6 +27,7 @@ crop_index="0"
 offset="150"
 cell_volume_cutoff="2000"
 image_size="2048"
+rescale="True"
 
 ## Change to 0, to not align camera automatically and use override.
 ## If set to 1, the overrides are ignored
@@ -56,15 +57,15 @@ conda activate /projects/LIGHTSHEET/posfailab/ab50/tools/tf2-posfai
 SCARCH_RUN_DIR=/scratch/gpfs/${USER}/${SLURM_JOB_ID}
 mkdir ${SCARCH_RUN_DIR}
 mkdir ${SCARCH_RUN_DIR}/NUCL_IMAGE
-rsync -rLv ${NUCL_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/NUCL_IMAGE
+rsync -rL ${NUCL_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/NUCL_IMAGE
 mkdir ${SCARCH_RUN_DIR}/TF_IMAGE
-rsync -rLv ${TF_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/TF_IMAGE
+rsync -rL ${TF_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/TF_IMAGE
 mkdir ${SCARCH_RUN_DIR}/MEMBRANE_IMAGE
-rsync -rLv ${MEMBRANE_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/MEMBRANE_IMAGE
+rsync -rL ${MEMBRANE_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/MEMBRANE_IMAGE
 mkdir ${SCARCH_RUN_DIR}/MEMBRANE_SEG
-rsync -rLv ${MEMBRANE_SEG_DIR}/ ${SCARCH_RUN_DIR}/MEMBRANE_SEG
+rsync -rL ${MEMBRANE_SEG_DIR}/ ${SCARCH_RUN_DIR}/MEMBRANE_SEG
 mkdir ${SCARCH_RUN_DIR}/NUCL_SEG
-rsync -rLv ${NUCL_SEG_DIR}/ ${SCARCH_RUN_DIR}/NUCL_SEG
+rsync -rL ${NUCL_SEG_DIR}/ ${SCARCH_RUN_DIR}/NUCL_SEG
 mkdir ${SCARCH_RUN_DIR}/CROP
 [[ -n "$CROP_DIR" ]] && rsync -rLv ${CROP_DIR}/ ${SCARCH_RUN_DIR}/CROP
 mkdir ${SCARCH_RUN_DIR}/OUT
@@ -83,6 +84,7 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --cropbox_index ${crop_index} \
   --timestamp_min ${timestamp_min} \
   --timestamp_max ${timestamp_max} \
+  --rescale ${rescale} \
   --offset ${offset} \
   --cell_volume_cutoff ${cell_volume_cutoff} \
   --max_margin ${image_size} \

@@ -40,6 +40,8 @@ def cli():
               help="The first timestamp to use for cropping.")
 @click.option("--timestamp_max","-te", required=False, default=-1, type=click.INT,
               help="The last timestamp to use for cropping. Setting -1 means use to the last available.")
+@click.option("--rescale", "-rsc", required=True, default=False, type=click.BOOL,
+              help="Enable rescaling of the nuclei images before TF extraction.")
 @click.option("--offset","-of", required=False, default=150, type=click.INT,
               help="The offset used during cropping.")
 @click.option("--cell_volume_cutoff", required=True, default=1024, type=click.FLOAT,
@@ -59,7 +61,7 @@ def cli():
               help="Y shift for camera alignment. For our 210809 data, for Cdx2, Masha found y_shift = 15")
 def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nucl_seg_dir, membrane_seg_dir,
                     crop_dir, out_dir, out_prefix, cropbox_index,
-                    timestamp_min, timestamp_max, offset,
+                    timestamp_min, timestamp_max, rescale, offset,
                     cell_volume_cutoff, max_margin, align_camera, align_camera_timestamps,max_absolute_shift,
                     x_shift_override, y_shift_override):
 
@@ -116,7 +118,8 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
     t0 = time()
     nuc_tf_vals, nuc_vols = quantify_tf_nucl(tf_signal_image_dir, nucl_seg_dir, crop_dir,
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
-                                           timestamp_max, offset, max_margin, max_abs_alignment_shift, x_shift, y_shift)
+                                           timestamp_max, rescale, offset, max_margin,
+                                           max_abs_alignment_shift, x_shift, y_shift)
 
     if len(nuc_tf_vals) > 0:
         with open(os.path.join(out_dir, out_prefix + '_nuclei_tf.csv'), 'w') as f_out:

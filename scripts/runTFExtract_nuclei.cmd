@@ -75,6 +75,7 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --cropbox_index ${crop_index} \
   --timestamp_min ${timestamp_min} \
   --timestamp_max ${timestamp_max} \
+  --rescale False \
   --offset ${offset} \
   --cell_volume_cutoff ${cell_volume_cutoff} \
   --max_margin ${image_size} \

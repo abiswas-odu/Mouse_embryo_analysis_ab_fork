@@ -4,6 +4,7 @@ from skimage.transform import rescale
 from cropbox_loader import load_cropboxes
 from Label_read import *
 import os
+from scipy.ndimage import zoom
 
 # Quantifies TF intensity in cells and nuclei for provided raw images and nuclear segmentation
 
@@ -22,7 +23,7 @@ import os
 
 def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                 crop_box_index=0, cell_volume_cutoff=0, min_time=0,
-                max_time=-1, offset=150,
+                max_time=-1, rescale=False, offset=150,
                 max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
 
     crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
@@ -58,12 +59,14 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                 # Get the nuclei label file names with same camera
                 # read segmentation results
                 nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext, "nuclei")
-
                 #Extract nucl channel data
                 if type(nuc_label) is np.ndarray:
+                    nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
+                    if rescale:
+                        a = rescale(a, (1/(2*0.208), 1/4, 1/4), preserve_range=True, anti_aliasing=True)
+                        nuc_label = zoom(nuc_label, (1/(0.208*2), 1/4, 1/4), order=0, mode='nearest')
                     nuc_tf_vals[time_index] = {}
                     nuc_vols[time_index] = {}
-                    nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
                     for lab in np.unique(nuc_label):
                         if lab != 0:
                             nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
