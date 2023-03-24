@@ -72,7 +72,7 @@ mkdir ${SCARCH_RUN_DIR}/OUT
 
 # Run the command off scratch
 SCRIPT_PATH=/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork
-align_timestamp_params=[[ -n "$align_cam_timestamps" ]] && --align_camera_timestamps ${align_cam_timestamps}
+align_timestamp_params=$([[ -n "$align_cam_timestamps" ]] && echo "--align_camera_timestamps ${align_cam_timestamps}")
 python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --nucl_image_dir ${SCARCH_RUN_DIR}/NUCL_IMAGE \
   --tf_signal_image_dir ${SCARCH_RUN_DIR}/TF_IMAGE \
