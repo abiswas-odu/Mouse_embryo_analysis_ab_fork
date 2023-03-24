@@ -60,11 +60,12 @@ rsync -rL ${TF_IMAGE_DIR}/ ${SCARCH_RUN_DIR}/TF_IMAGE
 mkdir ${SCARCH_RUN_DIR}/NUCL_SEG
 rsync -rL ${NUCL_SEG_DIR}/ ${SCARCH_RUN_DIR}/NUCL_SEG
 mkdir ${SCARCH_RUN_DIR}/CROP
-[[ -n "$CROP_DIR" ]] && rsync -rLv ${CROP_DIR}/ ${SCARCH_RUN_DIR}/CROP
+[[ -n "$CROP_DIR" ]] && rsync -rL ${CROP_DIR}/ ${SCARCH_RUN_DIR}/CROP
 mkdir ${SCARCH_RUN_DIR}/OUT
 
 # Run the command off scratch
 SCRIPT_PATH=/tigress/LIGHTSHEET/posfailab/ab50/tools/Mouse_embryo_analysis_ab_fork
+align_timestamp_params=[[ -n "$align_cam_timestamps" ]] && --align_camera_timestamps ${align_cam_timestamps}
 python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --nucl_image_dir ${SCARCH_RUN_DIR}/NUCL_IMAGE \
   --tf_signal_image_dir ${SCARCH_RUN_DIR}/TF_IMAGE \
@@ -80,7 +81,7 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --cell_volume_cutoff ${cell_volume_cutoff} \
   --max_margin ${image_size} \
   --align_camera ${align_camera} \
-  --align_camera_timestamps ${align_cam_timestamps} \
+  ${align_timestamp_params} \
   --max_absolute_shift ${max_abs_shift} \
   --x_shift_override ${x_shift_override} \
   --y_shift_override ${y_shift_override}

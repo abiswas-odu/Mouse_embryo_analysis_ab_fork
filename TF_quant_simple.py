@@ -22,9 +22,9 @@ from scipy.ndimage import zoom
 # # nuc_tf_vals = dictionary of nuclear intensities indexed by (timepoint, label)
 
 def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
-                crop_box_index=0, cell_volume_cutoff=0, min_time=0,
-                max_time=-1, rescale=False, offset=150,
-                max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
+                     crop_box_index=0, cell_volume_cutoff=0, min_time=0,
+                     max_time=-1, do_rescale=False, offset=150,
+                     max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
 
     crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
                                                                     offset, max_margin, max_abs_alignment_shift)
@@ -62,15 +62,16 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                 #Extract nucl channel data
                 if type(nuc_label) is np.ndarray:
                     nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
-                    if rescale:
-                        a = rescale(a, (1/(2*0.208), 1/4, 1/4), preserve_range=True, anti_aliasing=True)
+                    if do_rescale:
+                        a = rescale(a, (1 / (2 * 0.208), 1 / 4, 1 / 4), preserve_range=True, anti_aliasing=True)
                         nuc_label = zoom(nuc_label, (1/(0.208*2), 1/4, 1/4), order=0, mode='nearest')
                     nuc_tf_vals[time_index] = {}
                     nuc_vols[time_index] = {}
                     for lab in np.unique(nuc_label):
                         if lab != 0:
-                            nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
-                            nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
+                            if np.sum(nuc_label == lab) >= cell_volume_cutoff:
+                                nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
+                                nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
         except Exception as e:
             print('Skipping image: ' + str(im))
             print('Exception:')
