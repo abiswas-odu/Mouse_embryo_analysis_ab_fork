@@ -24,7 +24,7 @@ from scipy.ndimage import zoom
 def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                      crop_box_index=0, cell_volume_cutoff=0, min_time=0,
                      max_time=-1, do_rescale=False, offset=150,
-                     max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
+                     max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0, extract_background=True):
 
     crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
                                                                     offset, max_margin, max_abs_alignment_shift)
@@ -68,7 +68,7 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                     nuc_tf_vals[time_index] = {}
                     nuc_vols[time_index] = {}
                     for lab in np.unique(nuc_label):
-                        if lab != 0:
+                        if extract_background or lab != 0:
                             if np.sum(nuc_label == lab) >= cell_volume_cutoff:
                                 nuc_tf_vals[time_index][lab] = np.mean(a[nuc_label == lab])
                                 nuc_vols[time_index][lab] = np.count_nonzero(nuc_label == lab)
@@ -97,7 +97,7 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
 def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
                 crop_box_index=0, cell_volume_cutoff=0, min_time=0,
                 max_time=-1, offset=150,
-                max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0):
+                max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0, extract_background=True):
 
     crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
                                                                     offset, max_margin, max_abs_alignment_shift)
@@ -143,7 +143,7 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
                     mem_tf_vals[time_index] = {}
                     mem_vols[time_index] = {}
                     for lab in np.unique(mem_label):
-                        if lab != 0:
+                        if extract_background or lab != 0:
                             if np.sum(mem_label == lab) >= cell_volume_cutoff:
                                 mem_tf_vals[time_index][lab] = np.mean(a_mem[mem_label == lab])
                                 mem_vols[time_index][lab] = np.count_nonzero(mem_label == lab)

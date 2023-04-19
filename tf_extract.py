@@ -4,7 +4,7 @@ from time import time
 from Align_cameras import *
 from ErodeLabels import *
 
-__version__ = "2.0"
+__version__ = "2.1"
 
 @click.group()
 def cli():
@@ -48,6 +48,8 @@ def cli():
               help="The cell volume below which cells are not considered.")
 @click.option("--max_margin", required=False, default=2048, type=click.INT,
               help="Original size of images.")
+@click.option("--extract_background", required=False, type=click.BOOL,
+              help="Extract the zero label background.")
 @click.option("--align_camera", required=True, type=click.BOOL,
               help="Align the camera.")
 @click.option("--align_camera_timestamps", required=False, default='', type=click.STRING,
@@ -62,7 +64,7 @@ def cli():
 def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nucl_seg_dir, membrane_seg_dir,
                     crop_dir, out_dir, out_prefix, cropbox_index,
                     timestamp_min, timestamp_max, rescale, offset,
-                    cell_volume_cutoff, max_margin, align_camera, align_camera_timestamps,max_absolute_shift,
+                    cell_volume_cutoff, max_margin, extract_background, align_camera, align_camera_timestamps, max_absolute_shift,
                     x_shift_override, y_shift_override):
 
     # Max. Limits of the shift
@@ -119,7 +121,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
     nuc_tf_vals, nuc_vols = quantify_tf_nucl(tf_signal_image_dir, nucl_seg_dir, crop_dir,
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
                                            timestamp_max, rescale, offset, max_margin,
-                                           max_abs_alignment_shift, x_shift, y_shift)
+                                           max_abs_alignment_shift, x_shift, y_shift, extract_background)
 
     if len(nuc_tf_vals) > 0:
         with open(os.path.join(out_dir, out_prefix + '_nuclei_tf.csv'), 'w') as f_out:
@@ -133,7 +135,8 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
             os.path.exists(membrane_image_dir) and os.path.exists(membrane_seg_dir):
         mem_tf_vals, mem_vols = quantify_tf_mebrane(membrane_image_dir, membrane_seg_dir, crop_dir,
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
-                                           timestamp_max, offset, max_margin, max_abs_alignment_shift, x_shift, y_shift)
+                                           timestamp_max, offset, max_margin,
+                                            max_abs_alignment_shift, x_shift, y_shift, extract_background)
 
         if len(mem_tf_vals) > 0:
             with open(os.path.join(out_dir, out_prefix + '_membrane_tf.csv'), 'w') as f_out:

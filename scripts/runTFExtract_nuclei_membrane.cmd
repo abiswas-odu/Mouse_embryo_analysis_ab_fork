@@ -39,6 +39,9 @@ max_abs_shift="10"           # The absolute value of MAX shift to be explored in
 x_shift_override="24"        # Override for X shift if align_camera="0"
 y_shift_override="23"        # Override for X shift if align_camera="1"
 
+# Set option to toggle background extraction
+extract_background="1"
+
 ##===================================================================================================
 ##==============================NO CHANGES BELOW THIS LINE===========================================
 ##===================================================================================================
@@ -93,7 +96,8 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   ${align_timestamp_params} \
   --max_absolute_shift ${max_abs_shift} \
   --x_shift_override ${x_shift_override} \
-  --y_shift_override ${y_shift_override}
+  --y_shift_override ${y_shift_override} \
+  --extract_background ${extract_background}
 
 # Copy output and remove files from scratch
 rsync -r ${SCARCH_RUN_DIR}/OUT/ ${OUT_DIR}
