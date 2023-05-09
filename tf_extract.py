@@ -61,11 +61,13 @@ def cli():
               help="X shift for camera alignment. For our 210809 data, for Cdx2, Masha found x_shift = -11.")
 @click.option("--y_shift_override", required=False, default=0, type=click.INT,
               help="Y shift for camera alignment. For our 210809 data, for Cdx2, Masha found y_shift = 15")
+@click.option("--num_threads", "-n", required=False, default=4, type=click.INT,
+              help="The number of threads.")
 def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nucl_seg_dir, membrane_seg_dir,
                     crop_dir, out_dir, out_prefix, cropbox_index,
                     timestamp_min, timestamp_max, rescale, offset,
                     cell_volume_cutoff, max_margin, extract_background, align_camera, align_camera_timestamps, max_absolute_shift,
-                    x_shift_override, y_shift_override):
+                    x_shift_override, y_shift_override, num_threads):
 
     # Max. Limits of the shift
     max_abs_alignment_shift = max_absolute_shift
@@ -99,7 +101,8 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
                 file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_idx]))
                 nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
                 x_shift_i, y_shift_i = align_cameras(str(images[image_idx]), nucl_seg_file, crop_dir,
-                                                     cropbox_index, max_abs_alignment_shift, offset, max_margin)
+                                                     cropbox_index, max_abs_alignment_shift,
+                                                     offset, max_margin, num_threads)
                 print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_i))
                 print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_i))
                 x_shift = x_shift + x_shift_i
@@ -121,7 +124,8 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
     nuc_tf_vals, nuc_vols = quantify_tf_nucl(tf_signal_image_dir, nucl_seg_dir, crop_dir,
                                            cropbox_index, cell_volume_cutoff, timestamp_min,
                                            timestamp_max, rescale, offset, max_margin,
-                                           max_abs_alignment_shift, x_shift, y_shift, extract_background)
+                                           max_abs_alignment_shift, x_shift, y_shift,
+                                           extract_background, num_threads)
 
     if len(nuc_tf_vals) > 0:
         with open(os.path.join(out_dir, out_prefix + '_nuclei_tf.csv'), 'w') as f_out:
@@ -134,9 +138,10 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
     if membrane_image_dir is not None and membrane_seg_dir is not None and \
             os.path.exists(membrane_image_dir) and os.path.exists(membrane_seg_dir):
         mem_tf_vals, mem_vols = quantify_tf_mebrane(membrane_image_dir, membrane_seg_dir, crop_dir,
-                                           cropbox_index, cell_volume_cutoff, timestamp_min,
-                                           timestamp_max, offset, max_margin,
-                                            max_abs_alignment_shift, x_shift, y_shift, extract_background)
+                                            cropbox_index, cell_volume_cutoff, timestamp_min,
+                                            timestamp_max, offset, max_margin,
+                                            max_abs_alignment_shift, x_shift, y_shift,
+                                            extract_background, num_threads)
 
         if len(mem_tf_vals) > 0:
             with open(os.path.join(out_dir, out_prefix + '_membrane_tf.csv'), 'w') as f_out:
@@ -167,11 +172,14 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
               help="The offset used during cropping.")
 @click.option("--max_margin", required=False, default=2048, type=click.INT,
               help="Original size of images.")
-def align_cam(orig_image_file, nucl_seg_file, crop_dir, cropbox_index, offset, max_margin):
+@click.option("--num_threads", "-n", required=False, default=4, type=click.INT,
+              help="The number of threads.")
+def align_cam(orig_image_file, nucl_seg_file, crop_dir,
+              cropbox_index, offset, max_margin, num_threads):
     click.echo('Attempting to align cameras...')
     t0 = time()
     x_shift, y_shift = align_cameras(orig_image_file, nucl_seg_file, crop_dir,
-                                     cropbox_index, offset, max_margin)
+                                     cropbox_index, offset, max_margin, num_threads)
     print('X-shift:' + str(x_shift))
     print('Y-shift:' + str(y_shift))
 

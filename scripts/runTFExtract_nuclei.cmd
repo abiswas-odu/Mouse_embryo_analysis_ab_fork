@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=extract_TF    # create a short name for your job
 #SBATCH --nodes=1                # node count
-#SBATCH --ntasks=1               # total number of tasks across all nodes
+#SBATCH --ntasks=8               # total number of tasks across all nodes
 #SBATCH --mem=40G                # total memory per node
 #SBATCH --time=12:00:00          # total run time limit (HH:MM:SS)
 #SBATCH -A molbio
@@ -25,6 +25,7 @@ crop_index="0"
 offset="150"
 cell_volume_cutoff="2000"
 image_size="2048"
+num_threads="8"
 
 ## Change to 0, to not align camera automatically and use override. 
 ## If set to 1, the overrides are ignored 
@@ -88,7 +89,8 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --max_absolute_shift ${max_abs_shift} \
   --x_shift_override ${x_shift_override} \
   --y_shift_override ${y_shift_override} \
-  --extract_background ${extract_background}
+  --extract_background ${extract_background} \
+  --num_threads ${num_threads}
 
 # Copy output and remove files from scratch
 rsync -r ${SCARCH_RUN_DIR}/OUT/ ${OUT_DIR}

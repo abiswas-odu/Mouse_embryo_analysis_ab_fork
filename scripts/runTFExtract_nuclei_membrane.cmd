@@ -28,6 +28,7 @@ offset="150"
 cell_volume_cutoff="2000"
 image_size="2048"
 rescale="True"
+num_threads="8"
 
 ## Change to 0, to not align camera automatically and use override.
 ## If set to 1, the overrides are ignored
@@ -97,7 +98,8 @@ python ${SCRIPT_PATH}/tf_extract.py tf-align-simple \
   --max_absolute_shift ${max_abs_shift} \
   --x_shift_override ${x_shift_override} \
   --y_shift_override ${y_shift_override} \
-  --extract_background ${extract_background}
+  --extract_background ${extract_background} \
+  --num_threads ${num_threads}
 
 # Copy output and remove files from scratch
 rsync -r ${SCARCH_RUN_DIR}/OUT/ ${OUT_DIR}

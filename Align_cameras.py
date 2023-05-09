@@ -19,16 +19,16 @@ from cropbox_loader import load_cropboxes
 
 
 def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index,
-                  max_abs_alignment_shift=50, offset=150, max_margin=2048):
+                  max_abs_alignment_shift=50, offset=150, max_margin=2048, num_threads: int = 1):
 
     crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
                                                                     offset, max_margin, max_abs_alignment_shift)
 
-    nuc_label = read_image(nucl_segm_image)
+    nuc_label = read_image(nucl_segm_image, num_threads)
     nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
     if type(nuc_label) is np.ndarray:
         print('Nuclear Segmentations found...')
-        tf = read_image(raw_image)
+        tf = read_image(raw_image, num_threads)
         mean_signal = {}
         for x_shift in range(-max_abs_alignment_shift, max_abs_alignment_shift):
             mean_signal[x_shift] = {}

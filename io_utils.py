@@ -8,7 +8,7 @@ except ImportError:
 import tifffile as tif
 from csbdeep.io import save_tiff_imagej_compatible
 
-def read_image(image_path_file):
+def read_image(image_path_file: os.PathLike, num_threads:int = 1) -> np.ndarray:
     """Read an image file in in klb/h5/tif/npy format.
     Args:
         image_path_file: Path to the image file in klb/h5/tif/npy format with the same extensions respectively.
@@ -36,7 +36,7 @@ def read_image(image_path_file):
         him = h5py.File(image_path_file, 'r')
         Xi = him.get('Data')[:]
     elif (image_path_file[-3:] == 'klb'):
-        Xi = pyklb.readfull(image_path_file)
+        Xi = pyklb.readfull(image_path_file, num_threads)
 
     print('loaded image shape:', Xi.shape)
     return Xi
@@ -65,7 +65,7 @@ def crop_frames(Xi, frame_1, frame_2):
     """
     return Xi[frame_1:frame_2, :, :]
 
-def write_image(labels, out_image_file, output_format):
+def write_image(labels: np.ndarray, out_image_file:os.PathLike, output_format:str, num_threads:int = 1):
     """Writes a N-dimensional numpy array in tif format
     Args:
         labels:  N-dimensional numpy array
@@ -78,7 +78,7 @@ def write_image(labels, out_image_file, output_format):
     segmentation_file_name = ""
     if output_format.upper() == "KLB":
         segmentation_file_name = out_image_file + ".klb"
-        pyklb.writefull(labels, segmentation_file_name)
+        pyklb.writefull(labels, segmentation_file_name, num_threads)
     elif output_format.upper() == "H5":
         segmentation_file_name = out_image_file + ".h5"
         hf = h5py.File(segmentation_file_name, 'w')

@@ -24,7 +24,8 @@ from scipy.ndimage import zoom
 def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
                      crop_box_index=0, cell_volume_cutoff=0, min_time=0,
                      max_time=-1, do_rescale=False, offset=150,
-                     max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0, extract_background=True):
+                     max_margin=2048, max_abs_alignment_shift=50,
+                     x_shift=0, y_shift=0, extract_background=True, num_threads:int = 1):
 
     crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
                                                                     offset, max_margin, max_abs_alignment_shift)
@@ -54,11 +55,11 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
             file_base, file_prefix, file_ext, time_index = get_filename_components(image_file_str)
 
             if min_time <= time_index < max_time+1:
-                a = read_image(image_file_str)
+                a = read_image(image_file_str, num_threads)
                 a = a[:, (crop_x_min+x_shift):(crop_x_max+x_shift), (crop_y_min+y_shift):(crop_y_max+y_shift)]
                 # Get the nuclei label file names with same camera
                 # read segmentation results
-                nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext, "nuclei")
+                nuc_label = read_segments(nucl_segm_dir, file_prefix, file_ext, "nuclei", num_threads)
                 #Extract nucl channel data
                 if type(nuc_label) is np.ndarray:
                     nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
@@ -97,7 +98,8 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
 def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
                 crop_box_index=0, cell_volume_cutoff=0, min_time=0,
                 max_time=-1, offset=150,
-                max_margin=2048, max_abs_alignment_shift=50, x_shift=0, y_shift=0, extract_background=True):
+                max_margin=2048, max_abs_alignment_shift=50,
+                x_shift=0, y_shift=0, extract_background=True, num_threads: int = 1):
 
     crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
                                                                     offset, max_margin, max_abs_alignment_shift)
@@ -124,7 +126,7 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
         try:
             image_file_str = str(im)
             print('Processing: '+ image_file_str)
-            a = read_image(image_file_str)
+            a = read_image(image_file_str, num_threads)
             a = a[:, (crop_x_min+x_shift):(crop_x_max+x_shift), (crop_y_min+y_shift):(crop_y_max+y_shift)]
             dir_name = os.path.dirname(image_file_str)
 
@@ -133,7 +135,7 @@ def quantify_tf_mebrane(membrane_raw_dir, mem_segm_dir, crop_dir,
             # Check within range to be extracted
             if time_index >= min_time and time_index < max_time+1:
                 #Extract membrane channel data
-                mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane")
+                mem_label = read_segments(mem_segm_dir, file_prefix, file_ext, "membrane", num_threads)
                 if type(mem_label) is np.ndarray:
                     a_mem = rescale(a, (1/(2*0.208), 1/4, 1/4), preserve_range=True, anti_aliasing=True)
                     sh = mem_label.shape

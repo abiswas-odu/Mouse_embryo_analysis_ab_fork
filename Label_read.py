@@ -12,7 +12,7 @@ import numpy as np
 # # nuc_mask = nuclear labels indexed
 # Will return None if one or both the segmentation types is unavailable
 
-def read_segments(data_dir, file_prefix, file_ext, segmentation_type):
+def read_segments(data_dir, file_prefix, file_ext, segmentation_type, num_threads:int = 1):
     # Initialize masks to None
     label_mask = None
     # nuclei
@@ -20,11 +20,11 @@ def read_segments(data_dir, file_prefix, file_ext, segmentation_type):
         if segmentation_type == "membrane":
             label_file = construct_membrane_file(data_dir, file_prefix, file_ext)
             if os.path.exists(label_file):
-                label_mask = read_image(label_file)
+                label_mask = read_image(label_file, num_threads)
         else:
             label_file = construct_nucl_file(data_dir, file_prefix, file_ext)
             if os.path.exists(label_file):
-                label_mask = read_image(label_file)
+                label_mask = read_image(label_file, num_threads)
     except Exception as e:
             print('Problem with reading segments', e)
     return label_mask
