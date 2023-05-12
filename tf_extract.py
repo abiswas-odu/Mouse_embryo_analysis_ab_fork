@@ -76,7 +76,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
 
     if align_camera:
         images = [os.path.join(dp, f)
-                  for dp, dn, filenames in os.walk(nucl_image_dir)
+                  for dp, dn, filenames in os.walk(tf_signal_image_dir)
                   for f in filenames if (os.path.splitext(f)[1] == '.klb' or
                                          os.path.splitext(f)[1] == '.h5' or
                                          os.path.splitext(f)[1] == '.tif' or
