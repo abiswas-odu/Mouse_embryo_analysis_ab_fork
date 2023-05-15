@@ -4,7 +4,7 @@ from time import time
 from Align_cameras import *
 from ErodeLabels import *
 
-__version__ = "2.2"
+__version__ = "2.3"
 
 @click.group()
 def cli():
@@ -105,6 +105,10 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
                                                      offset, max_margin, num_threads)
                 print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_i))
                 print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_i))
+                # Print aligned images
+                print_aligned(str(images[image_idx]), nucl_seg_file, crop_dir, cropbox_index,
+                              x_shift_i, y_shift_i, out_dir, max_abs_alignment_shift,
+                              offset, max_margin, num_threads)
                 x_shift = x_shift + x_shift_i
                 y_shift = y_shift + y_shift_i
 
@@ -112,15 +116,6 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         y_shift = int(round(y_shift / len(align_camera_timestamps_list), 0))
         print('Mean X-shift:' + str(x_shift))
         print('Mean Y-shift:' + str(y_shift))
-
-        # Print aligned images
-        for image_idx in align_camera_timestamps_list:
-            if image_idx < len(images):
-                file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_idx]))
-                nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
-                print_aligned(str(images[image_idx]), nucl_seg_file, crop_dir, cropbox_index,
-                              x_shift, y_shift, out_dir, max_abs_alignment_shift,
-                              offset, max_margin, num_threads)
 
         t1 = time() - t0
         click.echo("Time elapsed: " + str(t1))
