@@ -62,6 +62,7 @@ def print_aligned(raw_image, nucl_segm_image, crop_dir, crop_box_index, x_shift,
                                                                     offset, max_margin, max_abs_alignment_shift)
     nuc_label = read_image(nucl_segm_image, num_threads)
     nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
+    tf_signal_values = nuc_label.copy()
     raw_image_name = os.path.splitext(os.path.basename(raw_image))[0]
     raw_image_name = raw_image_name + '_aligned'
     if type(nuc_label) is np.ndarray:
@@ -78,6 +79,7 @@ def print_aligned(raw_image, nucl_segm_image, crop_dir, crop_box_index, x_shift,
         y_max = (crop_y_max + y_shift) if 0 <= (crop_y_max + y_shift) < max_margin else 0 if 0 > (
                     crop_y_max + y_shift) else max_margin
         tf_signal = tf[:, x_min:x_max, y_min:y_max]
-        tf_signal_values = tf_signal[nuc_label.astype(bool)]
+        idx = (nuc_label > 0)
+        tf_signal_values[idx] = tf_signal[idx]
         out_image_file = os.path.join(out_dir, raw_image_name)
         write_image(tf_signal_values, out_image_file, 'tif', num_threads)
