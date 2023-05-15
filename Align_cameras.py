@@ -1,6 +1,6 @@
 import pandas as pd
 from Label_read import *
-from io_utils import read_image
+from io_utils import read_image, write_image
 from cropbox_loader import load_cropboxes
 
 # This method aligns Short camera to Long one, to be used for TF quantification obtained with Cam_Short.
@@ -53,3 +53,31 @@ def align_cameras(raw_image, nucl_segm_image, crop_dir, crop_box_index,
         return x_shift, y_shift
     else:
         return None, None
+
+
+def print_aligned(raw_image, nucl_segm_image, crop_dir, crop_box_index, x_shift, y_shift, out_dir,
+                  max_abs_alignment_shift=50, offset=150, max_margin=2048, num_threads: int = 1):
+
+    crop_y_min, crop_y_max, crop_x_min, crop_x_max = load_cropboxes(crop_dir, crop_box_index,
+                                                                    offset, max_margin, max_abs_alignment_shift)
+    nuc_label = read_image(nucl_segm_image, num_threads)
+    nuc_label = nuc_label[:, crop_x_min:crop_x_max, crop_y_min:crop_y_max]
+    raw_image_name = os.path.splitext(os.path.basename(raw_image))[0]
+    raw_image_name = raw_image_name + '_aligned'
+    if type(nuc_label) is np.ndarray:
+
+        print('Nuclear Segmentations found...')
+        tf = read_image(raw_image, num_threads)
+
+        x_min = (crop_x_min + x_shift) if 0 <= (crop_x_min + x_shift) < max_margin else 0 if 0 > (
+                    crop_x_min + x_shift) else max_margin
+        x_max = (crop_x_max + x_shift) if 0 <= (crop_x_max + x_shift) < max_margin else 0 if 0 > (
+                    crop_x_max + x_shift) else max_margin
+        y_min = (crop_y_min + y_shift) if 0 <= (crop_y_min + y_shift) < max_margin else 0 if 0 > (
+                    crop_y_min + y_shift) else max_margin
+        y_max = (crop_y_max + y_shift) if 0 <= (crop_y_max + y_shift) < max_margin else 0 if 0 > (
+                    crop_y_max + y_shift) else max_margin
+        tf_signal = tf[:, x_min:x_max, y_min:y_max]
+        tf_signal_values = tf_signal[nuc_label.astype(bool)]
+        out_image_file = os.path.join(out_dir, raw_image_name)
+        write_image(tf_signal_values, out_image_file, 'tif', num_threads)
