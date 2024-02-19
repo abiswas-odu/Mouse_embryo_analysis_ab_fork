@@ -50,11 +50,11 @@ def quantify_tf_nucl(nucl_raw_dir, nucl_segm_dir, crop_dir,
     for i, im in enumerate(images):
         try:
             image_file_str = str(im)
-            print('Processing: ' + image_file_str)
             dir_name = os.path.dirname(image_file_str)
             file_base, file_prefix, file_ext, time_index = get_filename_components(image_file_str)
 
             if min_time <= time_index < max_time+1:
+                print('Processing: ' + image_file_str)
                 a = read_image(image_file_str, num_threads)
                 a = a[:, (crop_x_min+x_shift):(crop_x_max+x_shift), (crop_y_min+y_shift):(crop_y_max+y_shift)]
                 # Get the nuclei label file names with same camera

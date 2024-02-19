@@ -55,6 +55,10 @@ def construct_nucl_file(data_dir, file_prefix, file_ext):
     else: # Check the other Cam
         if 'Long' in file_prefix:
             replace_cam_prefix = file_prefix.replace('Long','Short')
+        elif 'long' in file_prefix:
+            replace_cam_prefix = file_prefix.replace('long', 'short')
+        elif 'short' in file_prefix:
+            replace_cam_prefix = file_prefix.replace('short', 'long')
         else:
             replace_cam_prefix = file_prefix.replace('Short','Long')
         nucl_segm_file = os.path.join(data_dir,replace_cam_prefix + ".label" + file_ext)

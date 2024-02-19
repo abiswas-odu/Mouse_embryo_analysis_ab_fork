@@ -122,6 +122,21 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
     else:
         x_shift = x_shift_override
         y_shift = y_shift_override
+        images = [os.path.join(dp, f)
+                  for dp, dn, filenames in os.walk(tf_signal_image_dir)
+                  for f in filenames if (os.path.splitext(f)[1] == '.klb' or
+                                         os.path.splitext(f)[1] == '.h5' or
+                                         os.path.splitext(f)[1] == '.tif' or
+                                         os.path.splitext(f)[1] == '.npy')]
+        align_camera_timestamps_list = [0, int(len(images) / 2), len(images) - 1]
+        for image_idx in align_camera_timestamps_list:
+            if image_idx < len(images):
+                file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_idx]))
+                nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
+                # Print aligned images
+                print_aligned(str(images[image_idx]), nucl_seg_file, crop_dir, cropbox_index,
+                              x_shift, y_shift, out_dir, max_abs_alignment_shift,
+                              offset, max_margin, num_threads)
 
     click.echo('Extracting transcription factor intensity...')
     t0 = time()
