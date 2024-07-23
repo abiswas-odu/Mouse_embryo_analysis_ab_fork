@@ -84,8 +84,8 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         images = np.sort(images)
 
         # Filter images not in timestamp range
-        images = filter_timestamp_images(images, timestamp_min, timestamp_max)
-
+        images, image_time_indices = filter_timestamp_images(images, timestamp_min, timestamp_max)
+        print('Filtered timestamps:', image_time_indices)
         click.echo('Attempting to align cameras...')
 
         # split columns by ',' and remove whitespace
@@ -97,8 +97,8 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         print('Align cameras with timestamps:', align_camera_timestamps_list)
         t0 = time()
         for image_idx in align_camera_timestamps_list:
-            if image_idx < len(images):
-                file_base, file_prefix, file_ext, time_index = get_filename_components(str(images[image_idx]))
+            if image_idx in image_time_indices:
+                file_base, file_prefix, file_ext, time_index = get_filename_components(images[image_time_indices.index(image_idx)])
                 nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
                 x_shift_i, y_shift_i = align_cameras(str(images[image_idx]), nucl_seg_file, crop_dir,
                                                      cropbox_index, max_abs_alignment_shift,
