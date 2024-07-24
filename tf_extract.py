@@ -98,16 +98,17 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         t0 = time()
         for image_idx in align_camera_timestamps_list:
             if image_idx in image_time_indices:
-                print('Aligning with:', images[image_time_indices.index(image_idx)])
-                file_base, file_prefix, file_ext, time_index = get_filename_components(images[image_time_indices.index(image_idx)])
+                align_image = images[image_time_indices.index(image_idx)]
+                print('Aligning with:', align_image)
+                file_base, file_prefix, file_ext, time_index = get_filename_components(align_image)
                 nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
-                x_shift_i, y_shift_i = align_cameras(str(images[image_idx]), nucl_seg_file, crop_dir,
+                x_shift_i, y_shift_i = align_cameras(align_image, nucl_seg_file, crop_dir,
                                                      cropbox_index, max_abs_alignment_shift,
                                                      offset, max_margin, num_threads)
                 print('Image ' + str(time_index) + ' X-shift:' + str(x_shift_i))
                 print('Image ' + str(time_index) + ' Y-shift:' + str(y_shift_i))
                 # Print aligned images
-                print_aligned(str(images[image_idx]), nucl_seg_file, crop_dir, cropbox_index,
+                print_aligned(align_image, nucl_seg_file, crop_dir, cropbox_index,
                               x_shift_i, y_shift_i, out_dir, max_abs_alignment_shift,
                               offset, max_margin, num_threads)
                 x_shift = x_shift + x_shift_i
