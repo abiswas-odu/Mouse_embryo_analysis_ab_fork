@@ -98,7 +98,7 @@ def tf_align_simple(nucl_image_dir, tf_signal_image_dir, membrane_image_dir, nuc
         t0 = time()
         for image_idx in align_camera_timestamps_list:
             if image_idx in image_time_indices:
-                align_image = images[image_time_indices.index(image_idx)]
+                align_image = str(images[image_time_indices.index(image_idx)])
                 print('Aligning with:', align_image)
                 file_base, file_prefix, file_ext, time_index = get_filename_components(align_image)
                 nucl_seg_file = construct_nucl_file(nucl_seg_dir, file_prefix, file_ext)
